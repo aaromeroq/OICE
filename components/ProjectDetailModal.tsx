@@ -1,5 +1,6 @@
 import React, { useEffect } from 'react';
 import { Project } from '../types';
+import { useLanguage } from '../i18n';
 
 interface ProjectDetailModalProps {
   project: Project | null;
@@ -7,6 +8,8 @@ interface ProjectDetailModalProps {
 }
 
 export const ProjectDetailModal: React.FC<ProjectDetailModalProps> = ({ project, onClose }) => {
+  const { t } = useLanguage();
+
   useEffect(() => {
     const handleEsc = (event: KeyboardEvent) => {
       if (event.key === 'Escape') {
@@ -40,31 +43,31 @@ export const ProjectDetailModal: React.FC<ProjectDetailModalProps> = ({ project,
               onClick={onClose} 
               type="button"
               className="text-gray-400 hover:text-white transition-colors text-3xl font-bold leading-none flex items-center justify-center h-8 w-8 rounded-full hover:bg-gray-700 -mt-1 -mr-2"
-              aria-label="Cerrar modal"
+              aria-label={t('modal.closeAria')}
             >
               ×
             </button>
           </div>
           <div className="mt-6 border-t border-gray-700 pt-6">
-            <h4 className="font-semibold text-cyan-400 mb-2">Tipo de Modelo</h4>
+            <h4 className="font-semibold text-cyan-400 mb-2">{t('modal.modelType')}</h4>
             <p className="text-gray-300">{project.modelType}</p>
 
-            <h4 className="font-semibold text-cyan-400 mt-6 mb-2">Resumen</h4>
+            <h4 className="font-semibold text-cyan-400 mt-6 mb-2">{t('modal.summary')}</h4>
             <p className="text-gray-300">{project.summary}</p>
 
-            <h4 className="font-semibold text-cyan-400 mt-6 mb-2">Características Clave</h4>
+            <h4 className="font-semibold text-cyan-400 mt-6 mb-2">{t('modal.keyFeatures')}</h4>
             <ul className="list-disc list-inside space-y-2 text-gray-300">
               {project.keyFeatures.map((feature, index) => <li key={index}>{feature}</li>)}
             </ul>
 
-            <h4 className="font-semibold text-cyan-400 mt-6 mb-2">Desafíos</h4>
+            <h4 className="font-semibold text-cyan-400 mt-6 mb-2">{t('modal.challenges')}</h4>
             <ul className="list-disc list-inside space-y-2 text-gray-300">
               {project.challenges.map((challenge, index) => <li key={index}>{challenge}</li>)}
             </ul>
           </div>
         </div>
         <div className="bg-gray-900/50 px-6 sm:px-8 py-4 text-right rounded-b-xl">
-            <button onClick={onClose} className="px-4 py-2 bg-cyan-600 text-white rounded-md hover:bg-cyan-700 transition-colors text-sm font-semibold">Cerrar</button>
+            <button onClick={onClose} className="px-4 py-2 bg-cyan-600 text-white rounded-md hover:bg-cyan-700 transition-colors text-sm font-semibold">{t('modal.close')}</button>
         </div>
       </div>
       <style>{`

@@ -103,7 +103,7 @@ const translations: Record<Language, TranslationDictionary> = {
     'tabs.news': 'Noticias y Alertas',
     'tabs.ai': 'IA Conversacional',
     'tabs.links': 'Reportes y Herramientas',
-    'hero.title': 'Atlas de la Integración Energética',
+    'hero.title': 'Observatorio de Integración Regional de Sistemas Eléctricos',
     'hero.subtitle':
       'Un observatorio interactivo que mapea casos de estudio globales, conocimientos académicos y las últimas noticias para acelerar la interconexión eléctrica en América Latina y el Caribe.',
     'home.section.atlas.title': 'Atlas Interactivo',
@@ -201,7 +201,7 @@ const translations: Record<Language, TranslationDictionary> = {
     'tabs.news': 'News & Alerts',
     'tabs.ai': 'Conversational AI',
     'tabs.links': 'Reports & Tools',
-    'hero.title': 'Energy Integration Atlas',
+    'hero.title': 'Regional Power Systems Integration Observatory',
     'hero.subtitle':
       'An interactive observatory mapping global case studies, academic knowledge, and the latest news to accelerate electric interconnection in Latin America and the Caribbean.',
     'home.section.atlas.title': 'Interactive Atlas',

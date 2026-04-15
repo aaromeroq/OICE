@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Project, Region } from '../types';
+import { useLanguage } from '../i18n';
 
 // Declare Leaflet's global variable `L` for TypeScript
 declare var L: any;
@@ -10,15 +11,6 @@ interface InteractiveMapProps {
 }
 
 const regions: (Region | 'Global')[] = ['Global', 'Central & North America', 'South America', 'Europe', 'Asia'];
-
-const regionTranslations: Record<Region | 'Global', string> = {
-    'Global': 'Global',
-    'Central & North America': 'América Central y del Norte',
-    'South America': 'América del Sur',
-    'Europe': 'Europa',
-    'Asia': 'Asia'
-};
-
 
 // Function to get the bounds of a set of projects
 const getBoundsForProjects = (projects: Project[]): any | null => {
@@ -34,6 +26,7 @@ const getBoundsForProjects = (projects: Project[]): any | null => {
 };
 
 export const InteractiveMap: React.FC<InteractiveMapProps> = ({ projects, onSelectProject }) => {
+    const { t } = useLanguage();
     const mapRef = useRef<any | null>(null);
     const projectsLayerRef = useRef<any | null>(null);
     const [activeRegion, setActiveRegion] = useState<Region | 'Global'>('Global');
@@ -106,7 +99,7 @@ export const InteractiveMap: React.FC<InteractiveMapProps> = ({ projects, onSele
                 <div class="font-sans">
                     <strong class="text-base text-white">${project.name}</strong>
                     <p class="text-sm text-gray-300">${project.countries.join(' &ndash; ')}</p>
-                    <p class="text-xs text-cyan-400 mt-1">Capacidad: ${project.capacityMW.toLocaleString()} MW</p>
+                    <p class="text-xs text-cyan-400 mt-1">${t('map.capacity')}: ${project.capacityMW.toLocaleString()} MW</p>
                 </div>
             `;
 
@@ -157,7 +150,15 @@ export const InteractiveMap: React.FC<InteractiveMapProps> = ({ projects, onSele
             mapRef.current.flyTo([20, 0], 2, { duration: 1.5 });
         }
 
-    }, [activeRegion, projects, onSelectProject]);
+    }, [activeRegion, projects, onSelectProject, t]);
+
+    const regionLabels: Record<Region | 'Global', string> = {
+        'Global': t('map.region.global'),
+        'Central & North America': t('map.region.centralNorthAmerica'),
+        'South America': t('map.region.southAmerica'),
+        'Europe': t('map.region.europe'),
+        'Asia': t('map.region.asia')
+    };
     
     return (
         <div className="bg-gray-900 rounded-lg border border-gray-700/80 p-4 shadow-xl flex flex-col flex-grow overflow-hidden">
@@ -172,7 +173,7 @@ export const InteractiveMap: React.FC<InteractiveMapProps> = ({ projects, onSele
                                 : 'text-gray-400 hover:text-white'
                         }`}
                     >
-                        {regionTranslations[region]}
+                        {regionLabels[region]}
                     </button>
                 ))}
             </div>

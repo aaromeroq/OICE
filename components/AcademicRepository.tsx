@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { AcademicPublication } from '../types';
 import { SearchIcon } from './Icons';
+import { useLanguage } from '../i18n';
 
 const SEMANTIC_ENDPOINT = 'https://api.semanticscholar.org/graph/v1/paper/search';
 const API_KEY = 'mB34UaL8hVow81cwUnv71rP2FZn24J781rZs5S3g';
@@ -8,32 +9,36 @@ const SEARCH_FIELDS = 'title,abstract,authors,year,venue,url';
 const SEARCH_LIMIT = 20;
 const BASE_QUERY = 'International electricity interconnections';
 
-const PublicationCard: React.FC<{ pub: AcademicPublication }> = ({ pub }) => (
-    <div className="bg-gray-900 p-6 rounded-lg border border-gray-700/80 flex flex-col h-full animate-fade-in">
-        <div className="flex justify-between items-start mb-2">
-            <span className="text-xs text-gray-500">{pub.year || 'Año no disponible'} &bull; {pub.journal || 'Publicación no especificada'}</span>
+const PublicationCard: React.FC<{ pub: AcademicPublication }> = ({ pub }) => {
+    const { t } = useLanguage();
+    return (
+        <div className="bg-gray-900 p-6 rounded-lg border border-gray-700/80 flex flex-col h-full animate-fade-in">
+            <div className="flex justify-between items-start mb-2">
+                <span className="text-xs text-gray-500">{pub.year || t('repo.card.yearFallback')} &bull; {pub.journal || t('repo.card.journalFallback')}</span>
+            </div>
+            <h4 className="font-bold text-white text-lg mb-2 flex-grow">{pub.title}</h4>
+            <p className="text-sm text-gray-500 mb-3 italic">
+                {pub.authors.length > 0 ? pub.authors.join(', ') : t('repo.card.authorsFallback')}
+            </p>
+            <p className="text-gray-400 text-sm mb-4" style={{ display: '-webkit-box', WebkitLineClamp: 4, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
+                {pub.abstract || t('repo.card.abstractFallback')}
+            </p>
+            {pub.link && (
+                <a href={pub.link} target="_blank" rel="noopener noreferrer" className="text-sm font-semibold text-cyan-500 hover:text-cyan-400 transition-colors mt-auto self-start">
+                    {t('repo.card.readMore')}
+                </a>
+            )}
         </div>
-        <h4 className="font-bold text-white text-lg mb-2 flex-grow">{pub.title}</h4>
-        <p className="text-sm text-gray-500 mb-3 italic">
-            {pub.authors.length > 0 ? pub.authors.join(', ') : 'Autores no listados'}
-        </p>
-        <p className="text-gray-400 text-sm mb-4" style={{ display: '-webkit-box', WebkitLineClamp: 4, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
-            {pub.abstract || 'Resumen no disponible.'}
-        </p>
-        {pub.link && (
-            <a href={pub.link} target="_blank" rel="noopener noreferrer" className="text-sm font-semibold text-cyan-500 hover:text-cyan-400 transition-colors mt-auto self-start">
-                Leer Más &rarr;
-            </a>
-        )}
-    </div>
-);
+    );
+};
 
 
 export const AcademicRepository: React.FC = () => {
+    const { t } = useLanguage();
     const [searchTerm, setSearchTerm] = useState('');
     const [publications, setPublications] = useState<AcademicPublication[]>([]);
     const [loading, setLoading] = useState(true);
-    const [error, setError] = useState<string | null>(null);
+    const [errorDetail, setErrorDetail] = useState<string | null>(null);
     const [hasSearched, setHasSearched] = useState(true);
 
     const buildQuery = useCallback((extraTerms: string) => {
@@ -45,7 +50,7 @@ export const AcademicRepository: React.FC = () => {
         const query = buildQuery(extraTerms);
 
         setLoading(true);
-        setError(null);
+        setErrorDetail(null);
         setHasSearched(true);
         setPublications([]);
 
@@ -79,7 +84,7 @@ export const AcademicRepository: React.FC = () => {
 
         } catch (err: any) {
             console.error("Fallo al obtener datos de Semantic Scholar:", err);
-            setError(`No se pudieron obtener los resultados. Por favor, inténtelo de nuevo más tarde. (${err.message})`);
+            setErrorDetail(err?.message || 'Unknown error');
         } finally {
             setLoading(false);
         }
@@ -99,22 +104,22 @@ export const AcademicRepository: React.FC = () => {
             return (
                  <div className="text-center py-16">
                     <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-cyan-400 mx-auto"></div>
-                    <p className="text-gray-500 mt-4">Buscando en la literatura académica...</p>
+                    <p className="text-gray-500 mt-4">{t('repo.loading')}</p>
                 </div>
             );
         }
-        if (error) {
+        if (errorDetail) {
              return (
                 <div className="text-center py-16 bg-red-900/20 text-red-300 rounded-lg">
-                    <p className="font-semibold">Ocurrió un error</p>
-                    <p className="text-sm mt-2">{error}</p>
+                    <p className="font-semibold">{t('repo.errorTitle')}</p>
+                    <p className="text-sm mt-2">{t('repo.errorMessage', { error: errorDetail })}</p>
                 </div>
             );
         }
         if (publications.length === 0 && hasSearched) {
             return (
                 <div className="text-center py-16 bg-gray-900 rounded-lg">
-                    <p className="text-gray-500">No se encontraron publicaciones que coincidan con su búsqueda.</p>
+                    <p className="text-gray-500">{t('repo.empty')}</p>
                 </div>
             );
         }
@@ -129,24 +134,24 @@ export const AcademicRepository: React.FC = () => {
         <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-12 flex-grow">
             <div className="text-center mb-12">
                  <h2 className="text-3xl md:text-4xl font-extrabold text-white tracking-tight">
-                    Repositorio Académico
+                    {t('repo.title')}
                 </h2>
                 <p className="mt-4 max-w-2xl mx-auto text-lg text-gray-400">
-                    Explore el estado del arte en la investigación sobre interconexiones energéticas, impulsado por Semantic Scholar.
+                    {t('repo.subtitle')}
                 </p>
                 <p className="mt-2 text-sm text-gray-500">
-                    Siempre buscamos con “{BASE_QUERY}”; el texto del cuadro se concatena al final.
+                    {t('repo.searchHint', { baseQuery: BASE_QUERY })}
                 </p>
             </div>
 
             <form onSubmit={handleSearch} className="mb-8 p-4 bg-gray-900 rounded-lg border border-gray-800 flex flex-col sm:flex-row gap-4 items-center max-w-3xl mx-auto">
                 <input
                     type="text"
-                    placeholder="Añada filtros como país, tecnología, etc."
+                    placeholder={t('repo.searchPlaceholder')}
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
                     className="w-full sm:flex-grow bg-gray-800 text-white rounded-md border-gray-700 focus:ring-cyan-500 focus:border-cyan-500"
-                    aria-label="Buscar publicaciones"
+                    aria-label={t('repo.searchAria')}
                 />
                 <button 
                   type="submit"
@@ -154,7 +159,7 @@ export const AcademicRepository: React.FC = () => {
                   className="w-full sm:w-auto flex items-center justify-center px-5 py-2 bg-cyan-600 text-white rounded-md hover:bg-cyan-700 transition-colors text-sm font-semibold disabled:bg-gray-600 disabled:cursor-not-allowed"
                 >
                   <SearchIcon className="h-5 w-5 mr-2" />
-                  <span>{loading ? 'Buscando...' : 'Buscar'}</span>
+                  <span>{loading ? t('repo.searchingButton') : t('repo.searchButton')}</span>
                 </button>
             </form>
             

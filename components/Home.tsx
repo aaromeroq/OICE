@@ -4,6 +4,7 @@ import { NewsArticle } from '../types';
 import { GoogleGenAI } from "@google/genai";
 import { MapIcon, LibraryIcon, ChatIcon, LinkIcon, BookOpenIcon } from './Icons';
 import { academicPublications } from '../data/research';
+import { useLanguage } from '../i18n';
 
 type Tab = 'home' | 'atlas' | 'repository' | 'news' | 'ai' | 'links';
 
@@ -125,34 +126,36 @@ const PapersTicker: React.FC<{ setActiveTab: (tab: Tab) => void }> = ({ setActiv
 };
 
 
-const sections = [
-    {
-        title: "Atlas Interactivo",
-        description: "Visualice proyectos de interconexión eléctrica en todo el mundo y explore sus modelos de gobernanza y desafíos.",
-        icon: MapIcon,
-        tab: "atlas" as Tab
-    },
-    {
-        title: "Repositorio Académico",
-        description: "Acceda a las últimas investigaciones y publicaciones académicas sobre integración energética y mercados eléctricos.",
-        icon: LibraryIcon,
-        tab: "repository" as Tab
-    },
-    {
-        title: "IA Conversacional",
-        description: "Haga preguntas complejas a nuestro asistente de IA entrenado con los documentos y datos del observatorio.",
-        icon: ChatIcon,
-        tab: "ai" as Tab
-    },
-    {
-        title: "Enlaces de Interés",
-        description: "Descubra informes completos, herramientas de visualización de datos y recursos adicionales para su investigación.",
-        icon: LinkIcon,
-        tab: "links" as Tab
-    }
-];
-
 export const Home: React.FC<HomeProps> = ({ setActiveTab }) => {
+    const { t } = useLanguage();
+
+    const sections = [
+        {
+            title: t('home.section.atlas.title'),
+            description: t('home.section.atlas.description'),
+            icon: MapIcon,
+            tab: "atlas" as Tab
+        },
+        {
+            title: t('home.section.repository.title'),
+            description: t('home.section.repository.description'),
+            icon: LibraryIcon,
+            tab: "repository" as Tab
+        },
+        {
+            title: t('home.section.ai.title'),
+            description: t('home.section.ai.description'),
+            icon: ChatIcon,
+            tab: "ai" as Tab
+        },
+        {
+            title: t('home.section.links.title'),
+            description: t('home.section.links.description'),
+            icon: LinkIcon,
+            tab: "links" as Tab
+        }
+    ];
+
     return (
         <div className="flex-grow">
             <Hero />
@@ -170,7 +173,7 @@ export const Home: React.FC<HomeProps> = ({ setActiveTab }) => {
                                     onClick={() => setActiveTab(section.tab)}
                                     className="text-sm font-semibold text-cyan-400 hover:text-cyan-300 transition-colors self-start"
                                 >
-                                    Explorar Sección &rarr;
+                                    {t('home.explore')}
                                 </button>
                             </div>
                         ))}

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { NewsArticle } from '../types';
 import { GoogleGenAI } from "@google/genai";
+import { useLanguage } from '../i18n';
 
 const NewsArticleItem: React.FC<{ article: NewsArticle }> = ({ article }) => {
     return (
@@ -18,16 +19,19 @@ export const NewsFeed: React.FC = () => {
     const [articles, setArticles] = useState<NewsArticle[]>([]);
     const [sources, setSources] = useState<{uri: string, title: string}[]>([]);
     const [loading, setLoading] = useState<boolean>(true);
-    const [error, setError] = useState<string | null>(null);
+    const [errorKey, setErrorKey] = useState<null | 'news.error' | 'news.apiKeyMissing'>(null);
+    const { t } = useLanguage();
 
     useEffect(() => {
         const fetchNews = async () => {
             try {
                 setLoading(true);
-                setError(null);
+                setErrorKey(null);
                 
                 if (!process.env.API_KEY) {
-                  throw new Error("La clave de API de Gemini no está configurada.");
+                  setErrorKey('news.apiKeyMissing');
+                  setLoading(false);
+                  return;
                 }
                 
                 const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
@@ -89,7 +93,7 @@ export const NewsFeed: React.FC = () => {
 
             } catch (e: any) {
                 console.error("Fallo al obtener noticias de Gemini:", e);
-                setError('No se pudieron cargar las noticias. La IA no respondió como se esperaba o hubo un problema de conexión.');
+                setErrorKey('news.error');
             } finally {
                 setLoading(false);
             }
@@ -103,15 +107,15 @@ export const NewsFeed: React.FC = () => {
             return (
                 <div className="text-center py-16">
                     <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-cyan-400 mx-auto"></div>
-                    <p className="text-gray-500 mt-4">Consultando a la IA para las últimas noticias...</p>
+                    <p className="text-gray-500 mt-4">{t('news.loading')}</p>
                 </div>
             );
         }
 
-        if (error) {
+        if (errorKey) {
             return (
                 <div className="text-center py-16 bg-red-900/20 text-red-300 rounded-lg">
-                    <p>{error}</p>
+                    <p>{t(errorKey)}</p>
                 </div>
             );
         }
@@ -119,7 +123,7 @@ export const NewsFeed: React.FC = () => {
         if (articles.length === 0) {
             return (
                 <div className="text-center py-16 bg-gray-900 rounded-lg">
-                    <p className="text-gray-500">No se encontraron noticias relevantes en este momento.</p>
+                    <p className="text-gray-500">{t('news.empty')}</p>
                 </div>
             );
         }
@@ -131,19 +135,19 @@ export const NewsFeed: React.FC = () => {
         <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-12 flex-grow">
              <div className="text-center mb-12">
                  <h2 className="text-3xl md:text-4xl font-extrabold text-white tracking-tight">
-                    Noticias y Alertas
+                    {t('news.title')}
                 </h2>
                 <p className="mt-4 max-w-2xl mx-auto text-lg text-gray-400">
-                    Manténgase actualizado con los últimos avances en integración energética, impulsado por Gemini y Google Search.
+                    {t('news.subtitle')}
                 </p>
             </div>
 
             <div className="max-w-4xl mx-auto">
                 {renderContent()}
                 
-                {sources.length > 0 && !loading && !error && (
+                {sources.length > 0 && !loading && !errorKey && (
                     <div className="mt-12 pt-6 border-t border-gray-800">
-                        <h3 className="text-lg font-semibold text-gray-300 mb-4">Fuentes Consultadas</h3>
+                        <h3 className="text-lg font-semibold text-gray-300 mb-4">{t('news.sourcesTitle')}</h3>
                         <ul className="space-y-2">
                             {sources.map((source, index) => (
                                 <li key={index}>

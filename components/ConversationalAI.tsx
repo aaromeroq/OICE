@@ -2,6 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { GoogleGenAI } from '@google/genai';
 import { RAG_CONTENT } from '../data/ragContent';
 import { PaperAirplaneIcon } from './Icons';
+import { useLanguage } from '../i18n';
 
 interface Message {
   id: string;
@@ -21,17 +22,10 @@ const interconnections = [
   'Itaipú – HVDC'
 ];
 
-const questions = [
-  '¿Quién paga?',
-  '¿Cómo se paga?',
-  '¿Quién toma los riesgos?',
-  '¿Cómo participaron los Estados?',
-  '¿Transferencias de beneficios?'
-];
-
 const systemInstruction = `Eres un asistente experto en modelos de interconexión eléctrica. Tu base de conocimiento es exclusivamente el documento proporcionado. Responde a las preguntas del usuario basándote únicamente en el siguiente texto. Sé conciso y directo. Si la respuesta no está en el texto, indica claramente que la información no se encuentra en el documento. No inventes información. El documento es:\n\n---\n${RAG_CONTENT}\n---`;
 
 export const ConversationalAI: React.FC = () => {
+  const { t } = useLanguage();
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState('');
   const [selectedInterconnection, setSelectedInterconnection] = useState(interconnections[0]);
@@ -74,13 +68,13 @@ export const ConversationalAI: React.FC = () => {
         }
         const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
         
-        const prompt = `Pregunta del usuario: "${messageText}"\nResponde basándote únicamente en el documento.`;
+        const prompt = t('ai.userPrompt', { question: messageText });
 
         const responseStream = await ai.models.generateContentStream({
             model: "gemini-2.5-flash",
             contents: [
                 { role: 'user', parts: [{ text: systemInstruction }] },
-                { role: 'model', parts: [{ text: "Entendido. Estoy listo para responder preguntas basándome exclusivamente en el documento proporcionado." }] },
+                { role: 'model', parts: [{ text: t('ai.systemReady') }] },
                 { role: 'user', parts: [{ text: prompt }] }
             ]
         });
@@ -96,7 +90,7 @@ export const ConversationalAI: React.FC = () => {
 
     } catch (e: any) {
         console.error("Error with Gemini API:", e);
-        setError("La IA no pudo responder.");
+        setError(t('ai.error'));
         setMessages(prev => prev.filter(msg => msg.id !== modelMessageId));
     } finally {
         setLoading(false);
@@ -104,16 +98,24 @@ export const ConversationalAI: React.FC = () => {
   };
 
   const handlePresetQuery = (question: string) => {
-    const fullQuestion = `Sobre el modelo de ${selectedInterconnection}, ${question.toLowerCase()}`;
+    const fullQuestion = t('ai.presetPrompt', { interconnection: selectedInterconnection, question: question.toLowerCase() });
     handleSendMessage(fullQuestion);
   };
+
+  const questions = [
+    t('ai.question.whoPays'),
+    t('ai.question.howPays'),
+    t('ai.question.whoRisks'),
+    t('ai.question.stateParticipation'),
+    t('ai.question.benefitTransfers')
+  ];
 
   return (
     <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-12 flex-grow flex flex-col">
       <div className="text-center mb-12">
-        <h2 className="text-3xl md:text-4xl font-extrabold text-white tracking-tight">IA Conversacional</h2>
+        <h2 className="text-3xl md:text-4xl font-extrabold text-white tracking-tight">{t('ai.title')}</h2>
         <p className="mt-4 max-w-2xl mx-auto text-lg text-gray-400">
-          Dialoga con un asistente experto entrenado con los documentos del observatorio.
+          {t('ai.subtitle')}
         </p>
       </div>
 
@@ -123,14 +125,14 @@ export const ConversationalAI: React.FC = () => {
           {messages.length === 0 && (
              <div className="text-center text-gray-500 my-8">
               <div className="p-4 bg-gray-800/50 rounded-lg inline-block">
-                <p>Bienvenido al asistente de IA.</p>
-                <p className="text-sm mt-2">Selecciona un modelo y haz una pregunta para comenzar.</p>
+                <p>{t('ai.welcomeTitle')}</p>
+                <p className="text-sm mt-2">{t('ai.welcomeSubtitle')}</p>
               </div>
             </div>
           )}
           {messages.map((msg) => (
             <div key={msg.id} className={`flex gap-3 animate-fade-in ${msg.sender === 'user' ? 'justify-end' : 'justify-start'}`}>
-              {msg.sender === 'model' && <div className="w-8 h-8 rounded-full bg-cyan-500/20 flex-shrink-0 flex items-center justify-center text-cyan-400 font-bold text-xs">IA</div>}
+              {msg.sender === 'model' && <div className="w-8 h-8 rounded-full bg-cyan-500/20 flex-shrink-0 flex items-center justify-center text-cyan-400 font-bold text-xs">{t('ai.avatar')}</div>}
               <div className={`max-w-prose p-3 rounded-lg ${msg.sender === 'user' ? 'bg-cyan-600 text-white' : 'bg-gray-800 text-gray-200'}`}>
                 <div className="text-sm prose prose-invert prose-sm max-w-none" dangerouslySetInnerHTML={{ __html: msg.text.replace(/\n/g, '<br />').replace(/\* /g, '• ').replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>') }}></div>
               </div>
@@ -138,7 +140,7 @@ export const ConversationalAI: React.FC = () => {
           ))}
            {loading && messages[messages.length - 1]?.sender === 'model' && (
             <div className="flex gap-3 justify-start animate-fade-in">
-              <div className="w-8 h-8 rounded-full bg-cyan-500/20 flex-shrink-0 flex items-center justify-center text-cyan-400 font-bold text-xs">IA</div>
+              <div className="w-8 h-8 rounded-full bg-cyan-500/20 flex-shrink-0 flex items-center justify-center text-cyan-400 font-bold text-xs">{t('ai.avatar')}</div>
               <div className="max-w-prose p-3 rounded-lg bg-gray-800 text-gray-200">
                 <div className="flex items-center gap-2">
                     <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-gray-400"></div>
@@ -153,7 +155,7 @@ export const ConversationalAI: React.FC = () => {
         <div className="p-4 bg-gray-950/50 border-t border-gray-700/80">
           <div className="mb-4">
               <label htmlFor="interconnection-select" className="block text-xs text-gray-400 mb-1">
-                Consultas Guiadas sobre un Modelo de Interconexión:
+                {t('ai.guidedLabel')}
               </label>
               <select 
                 id="interconnection-select" 
@@ -183,7 +185,7 @@ export const ConversationalAI: React.FC = () => {
                     type="text"
                     value={input}
                     onChange={handleInputChange}
-                    placeholder="Escribe tu pregunta aquí..."
+                    placeholder={t('ai.placeholder')}
                     className="flex-grow bg-transparent border-0 focus:ring-0 w-full"
                     disabled={loading}
                 />
