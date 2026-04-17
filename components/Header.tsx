@@ -1,8 +1,9 @@
-import React from 'react';
-import { ZapIcon, MapIcon, LibraryIcon, NewspaperIcon, LinkIcon, ChatIcon, HomeIcon } from './Icons';
+import React, { useEffect, useState } from 'react';
+import { MapIcon, LibraryIcon, BookOpenIcon, BriefcaseIcon, LinkIcon, ChatIcon, HomeIcon, UsersIcon, NewspaperIcon } from './Icons';
+import { TransparentLogo } from './TransparentLogo';
 import { useLanguage } from '../i18n';
 
-type Tab = 'home' | 'atlas' | 'repository' | 'news' | 'ai' | 'links';
+type Tab = 'home' | 'atlas' | 'legislation' | 'catastro' | 'repository' | 'ai' | 'links' | 'members' | 'news';
 
 interface HeaderProps {
   activeTab: Tab;
@@ -11,114 +12,149 @@ interface HeaderProps {
 
 export const Header: React.FC<HeaderProps> = ({ activeTab, setActiveTab }) => {
   const { language, setLanguage, t } = useLanguage();
+  const [mobileOpen, setMobileOpen] = useState(false);
+  const [scrolled, setScrolled] = useState(false);
+
+  useEffect(() => {
+    const onScroll = () => setScrolled(window.scrollY > 8);
+    window.addEventListener('scroll', onScroll, { passive: true });
+    return () => window.removeEventListener('scroll', onScroll);
+  }, []);
 
   const tabs = [
     { id: 'home', label: t('tabs.home'), icon: HomeIcon },
     { id: 'atlas', label: t('tabs.atlas'), icon: MapIcon },
+    { id: 'legislation', label: t('tabs.legislation'), icon: BookOpenIcon },
+    { id: 'catastro', label: t('tabs.catastro'), icon: BriefcaseIcon },
     { id: 'repository', label: t('tabs.repository'), icon: LibraryIcon },
-    { id: 'news', label: t('tabs.news'), icon: NewspaperIcon },
     { id: 'ai', label: t('tabs.ai'), icon: ChatIcon },
+    { id: 'news', label: t('tabs.news'), icon: NewspaperIcon },
+    { id: 'members', label: t('tabs.members'), icon: UsersIcon },
     { id: 'links', label: t('tabs.links'), icon: LinkIcon },
   ];
 
   return (
-    <header className="bg-gray-950/80 backdrop-blur-sm sticky top-0 z-50 border-b border-gray-800">
-      <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between gap-4 min-h-24 py-4">
-          <div className="flex items-center">
-            <ZapIcon className="h-10 w-10 text-cyan-400 flex-shrink-0" />
-            <div className="ml-4">
-              <h1 className="text-xl sm:text-5xl font-bold text-white tracking-tight">
-                OIRSE
-              </h1>
-              <p className="text-xs text-gray-400 hidden sm:block">
-                {t('header.subtitleLine1')}
-              </p>
-              <p className="text-xs text-gray-400 hidden sm:block">
-                {t('header.subtitleLine2')}
-              </p>
+    <header
+      className={`sticky top-0 z-50 transition-all duration-300 ${
+        scrolled
+          ? 'bg-ivory-50/85 backdrop-blur-md border-b hairline shadow-[0_1px_0_rgba(20,24,26,0.04)]'
+          : 'bg-ivory-50/60 backdrop-blur-sm border-b border-transparent'
+      }`}
+    >
+      {/* Top bar */}
+      <div className="container mx-auto px-5 sm:px-8 lg:px-12">
+        <div className="flex items-center justify-between h-16">
+          {/* Wordmark */}
+          <button
+            type="button"
+            onClick={() => setActiveTab('home')}
+            className="group flex items-baseline gap-3 focus:outline-none"
+          >
+            <span className="relative inline-block">
+              <span className="font-display text-[34px] leading-none tracking-display text-moss-900">
+                oice
+              </span>
+              <span className="absolute -top-1 -right-2 w-1.5 h-1.5 rounded-full bg-copper-500"></span>
+            </span>
+            <span className="hidden sm:inline-flex items-center gap-2 pl-3 border-l hairline">
+              <span className="text-[10px] font-semibold uppercase tracking-[0.28em] text-moss-700/70">
+                {t('header.subtitle')}
+              </span>
+            </span>
+          </button>
+
+          <div className="flex items-center gap-5">
+            <div className="hidden xl:flex items-center gap-3 text-right">
+              <TransparentLogo src="/RIPCEL.png" alt="RIPCEL" className="h-8 object-contain" />
+              <span className="w-px h-6 bg-ink/10"></span>
+              <TransparentLogo src="/CYTED.png" alt="CYTED" className="h-8 object-contain" />
             </div>
-          </div>
-          <div className="flex items-center justify-end gap-4">
-            <div className="hidden md:flex items-center justify-end gap-x-6 min-w-0 overflow-hidden">
-              <a href="https://www.centroenlace.org/" target="_blank" rel="noopener noreferrer" title="Enlace - Centro para el Desarrollo Energético Sostenible">
-                <img
-                  src="https://res.cloudinary.com/dnh5bxvvy/image/upload/v1762958770/enlacelogo_cio5ge.png"
-                  alt="Enlace Logo"
-                  className="h-9 w-auto object-contain opacity-80 hover:opacity-100 transition-opacity"
-                />
-              </a>
-              <a href="https://uchile.cl/" target="_blank" rel="noopener noreferrer" title="Universidad de Chile">
-                <img
-                  src="https://res.cloudinary.com/dnh5bxvvy/image/upload/v1751649356/escudo-uchile-horizontal-color_bl-fondo-transp_ebnvfq.png"
-                  alt="Universidad de Chile Logo"
-                  className="h-8 w-auto object-contain opacity-80 hover:opacity-100 transition-opacity"
-                />
-              </a>
-              <a href="https://eie.pucv.cl/" target="_blank" rel="noopener noreferrer" title="Escuela de Ingenieria Electrica - PUCV">
-                <img
-                  src="https://res.cloudinary.com/dnh5bxvvy/image/upload/v1751648586/ESCUELA_DE_INGENIER%C3%8DA_EL%C3%89CTRICA_blanco_d6oj7o.png"
-                  alt="Departamento de Ingeniería Eléctrica Logo"
-                  className="h-8 w-auto object-contain opacity-80 hover:opacity-100 transition-opacity"
-                />
-              </a>
-              <a href="https://isci.cl" target="_blank" rel="noopener noreferrer" title="Instituto de Sistemas Complejos de Ingeniería">
-                <img
-                  src="https://res.cloudinary.com/dnh5bxvvy/image/upload/v1751649019/Logo-ISCI_eacof4.png"
-                  alt="ISCI Logo"
-                  className="h-9 w-auto object-contain opacity-80 hover:opacity-100 transition-opacity"
-                />
-              </a>
-            </div>
-            <div className="flex items-center rounded-full border border-gray-700 bg-gray-900/60 p-1 flex-shrink-0 relative z-10">
-              <button
-                onClick={() => setLanguage('es')}
-                className={`px-3 py-1 text-xs font-semibold rounded-full transition-colors ${language === 'es' ? 'bg-cyan-600 text-white' : 'text-gray-400 hover:text-white'
+
+            {/* Language toggle */}
+            <div className="flex items-center gap-0.5 rounded-full border hairline bg-white/70 p-0.5">
+              {(['es', 'en'] as const).map((lng) => (
+                <button
+                  key={lng}
+                  onClick={() => setLanguage(lng)}
+                  className={`px-3 py-1 text-[11px] font-semibold rounded-full transition-all ${
+                    language === lng
+                      ? 'bg-moss-900 text-ivory-50'
+                      : 'text-moss-700/70 hover:text-moss-900'
                   }`}
-                aria-label={t('language.switchToEs')}
-                type="button"
-              >
-                {t('language.es')}
-              </button>
-              <button
-                onClick={() => setLanguage('en')}
-                className={`px-3 py-1 text-xs font-semibold rounded-full transition-colors ${language === 'en' ? 'bg-cyan-600 text-white' : 'text-gray-400 hover:text-white'
-                  }`}
-                aria-label={t('language.switchToEn')}
-                type="button"
-              >
-                {t('language.en')}
-              </button>
+                  type="button"
+                  aria-label={t(lng === 'es' ? 'language.switchToEs' : 'language.switchToEn')}
+                >
+                  {t(lng === 'es' ? 'language.es' : 'language.en')}
+                </button>
+              ))}
             </div>
-          </div>
-        </div>
-      </div>
-      <div className="container mx-auto px-4 sm:px-6 lg:px-8 border-t border-gray-800/50">
-        <div className="flex items-center -mb-px overflow-x-auto md:justify-center hide-scrollbar">
-          {tabs.map((tab) => (
+
+            {/* Hamburger — shown below xl (so 9-tab nav never needs horizontal scroll) */}
             <button
-              key={tab.id}
-              onClick={() => setActiveTab(tab.id as Tab)}
-              className={`flex-shrink-0 whitespace-nowrap flex items-center space-x-2 px-4 py-3 text-sm font-medium border-b-2 transition-colors duration-300 ${activeTab === tab.id
-                  ? 'border-cyan-500 text-cyan-400'
-                  : 'border-transparent text-gray-400 hover:text-white'
-                }`}
+              className="xl:hidden text-moss-800 p-1 -mr-1"
+              onClick={() => setMobileOpen(!mobileOpen)}
+              aria-label="Toggle menu"
             >
-              <tab.icon className="h-5 w-5" />
-              <span>{tab.label}</span>
+              <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                {mobileOpen
+                  ? <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.75} d="M6 18L18 6M6 6l12 12" />
+                  : <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.75} d="M4 7h16M4 12h16M4 17h16" />}
+              </svg>
             </button>
-          ))}
+          </div>
         </div>
       </div>
-      <style>{`
-        .hide-scrollbar::-webkit-scrollbar {
-            display: none;
-        }
-        .hide-scrollbar {
-            -ms-overflow-style: none;
-            scrollbar-width: none;
-        }
-       `}</style>
+
+      {/* Desktop nav — only at xl+ where all 9 tabs fit without scroll */}
+      <nav className="hidden xl:block border-t hairline">
+        <div className="container mx-auto px-5 sm:px-8 lg:px-12">
+          <div className="flex items-center justify-between h-11">
+            {tabs.map((tab) => {
+              const active = activeTab === tab.id;
+              return (
+                <button
+                  key={tab.id}
+                  onClick={() => setActiveTab(tab.id as Tab)}
+                  className={`group relative flex items-center gap-1.5 px-2 h-full text-[13px] transition-colors whitespace-nowrap ${
+                    active ? 'text-moss-900' : 'text-ink/55 hover:text-moss-900'
+                  }`}
+                  type="button"
+                >
+                  <tab.icon className={`h-3.5 w-3.5 ${active ? 'text-copper-500' : 'text-ink/40 group-hover:text-copper-500'}`} />
+                  <span className={active ? 'font-semibold' : 'font-medium'}>{tab.label}</span>
+                  <span
+                    className={`absolute left-2 right-2 -bottom-px h-[2px] transition-all ${
+                      active ? 'bg-moss-900' : 'bg-transparent group-hover:bg-ink/20'
+                    }`}
+                  ></span>
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      </nav>
+
+      {/* Mobile / tablet nav */}
+      {mobileOpen && (
+        <div className="xl:hidden bg-ivory-50 border-t hairline">
+          <div className="container mx-auto px-4 py-3">
+            {tabs.map((tab) => (
+              <button
+                key={tab.id}
+                onClick={() => { setActiveTab(tab.id as Tab); setMobileOpen(false); }}
+                className={`flex items-center gap-3 w-full px-3 py-3 text-sm rounded-md transition-colors ${
+                  activeTab === tab.id
+                    ? 'bg-moss-900 text-ivory-50 font-semibold'
+                    : 'text-ink/70 hover:bg-ivory-100 font-medium'
+                }`}
+              >
+                <tab.icon className="h-4 w-4" />
+                <span>{tab.label}</span>
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
     </header>
   );
 };

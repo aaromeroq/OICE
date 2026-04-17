@@ -1,179 +1,93 @@
-import React, { useState, useEffect, useCallback } from 'react';
-import { AcademicPublication } from '../types';
+import React, { useState, useMemo } from 'react';
+import { academicPublications } from '../data/research';
 import { SearchIcon } from './Icons';
 import { useLanguage } from '../i18n';
-
-const SEMANTIC_ENDPOINT = 'https://api.semanticscholar.org/graph/v1/paper/search';
-const API_KEY = 'mB34UaL8hVow81cwUnv71rP2FZn24J781rZs5S3g';
-const SEARCH_FIELDS = 'title,abstract,authors,year,venue,url';
-const SEARCH_LIMIT = 20;
-const BASE_QUERY = 'International electricity interconnections';
-
-const PublicationCard: React.FC<{ pub: AcademicPublication }> = ({ pub }) => {
-    const { t } = useLanguage();
-    return (
-        <div className="bg-gray-900 p-6 rounded-lg border border-gray-700/80 flex flex-col h-full animate-fade-in">
-            <div className="flex justify-between items-start mb-2">
-                <span className="text-xs text-gray-500">{pub.year || t('repo.card.yearFallback')} &bull; {pub.journal || t('repo.card.journalFallback')}</span>
-            </div>
-            <h4 className="font-bold text-white text-lg mb-2 flex-grow">{pub.title}</h4>
-            <p className="text-sm text-gray-500 mb-3 italic">
-                {pub.authors.length > 0 ? pub.authors.join(', ') : t('repo.card.authorsFallback')}
-            </p>
-            <p className="text-gray-400 text-sm mb-4" style={{ display: '-webkit-box', WebkitLineClamp: 4, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
-                {pub.abstract || t('repo.card.abstractFallback')}
-            </p>
-            {pub.link && (
-                <a href={pub.link} target="_blank" rel="noopener noreferrer" className="text-sm font-semibold text-cyan-500 hover:text-cyan-400 transition-colors mt-auto self-start">
-                    {t('repo.card.readMore')}
-                </a>
-            )}
-        </div>
-    );
-};
-
 
 export const AcademicRepository: React.FC = () => {
     const { t } = useLanguage();
     const [searchTerm, setSearchTerm] = useState('');
-    const [publications, setPublications] = useState<AcademicPublication[]>([]);
-    const [loading, setLoading] = useState(true);
-    const [errorDetail, setErrorDetail] = useState<string | null>(null);
-    const [hasSearched, setHasSearched] = useState(true);
 
-    const buildQuery = useCallback((extraTerms: string) => {
-        const trimmed = extraTerms.trim();
-        return trimmed ? `${BASE_QUERY} ${trimmed}` : BASE_QUERY;
-    }, []);
-
-    const fetchPublications = useCallback(async (extraTerms: string) => {
-        const query = buildQuery(extraTerms);
-
-        setLoading(true);
-        setErrorDetail(null);
-        setHasSearched(true);
-        setPublications([]);
-
-        const params = new URLSearchParams({
-            query: query,
-            limit: SEARCH_LIMIT.toString(),
-            fields: SEARCH_FIELDS,
-        });
-
-        try {
-            const response = await fetch(`${SEMANTIC_ENDPOINT}?${params.toString()}`, {
-                headers: { 'x-api-key': API_KEY }
-            });
-
-            if (!response.ok) {
-                const errorData = await response.json().catch(() => ({ message: `Error del servidor: ${response.statusText}` }));
-                throw new Error(errorData.message || `Error: ${response.status}`);
-            }
-
-            const data = await response.json();
-            const formattedPublications: AcademicPublication[] = (data.data || []).map((p: any) => ({
-                id: p.paperId,
-                title: p.title,
-                authors: (p.authors || []).map((a: any) => a.name),
-                year: p.year,
-                abstract: p.abstract,
-                link: p.url,
-                journal: p.venue,
-            }));
-            setPublications(formattedPublications);
-
-        } catch (err: any) {
-            console.error("Fallo al obtener datos de Semantic Scholar:", err);
-            setErrorDetail(err?.message || 'Unknown error');
-        } finally {
-            setLoading(false);
-        }
-    }, [buildQuery]);
-
-    useEffect(() => {
-        fetchPublications('');
-    }, [fetchPublications]);
-
-    const handleSearch = async (e: React.FormEvent) => {
-        e.preventDefault();
-        fetchPublications(searchTerm);
-    };
-
-    const renderContent = () => {
-        if (loading) {
-            return (
-                 <div className="text-center py-16">
-                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-cyan-400 mx-auto"></div>
-                    <p className="text-gray-500 mt-4">{t('repo.loading')}</p>
-                </div>
-            );
-        }
-        if (errorDetail) {
-             return (
-                <div className="text-center py-16 bg-red-900/20 text-red-300 rounded-lg">
-                    <p className="font-semibold">{t('repo.errorTitle')}</p>
-                    <p className="text-sm mt-2">{t('repo.errorMessage', { error: errorDetail })}</p>
-                </div>
-            );
-        }
-        if (publications.length === 0 && hasSearched) {
-            return (
-                <div className="text-center py-16 bg-gray-900 rounded-lg">
-                    <p className="text-gray-500">{t('repo.empty')}</p>
-                </div>
-            );
-        }
-        return (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                {publications.map(pub => <PublicationCard key={pub.id} pub={pub} />)}
-            </div>
+    const filtered = useMemo(() => {
+        if (!searchTerm.trim()) return academicPublications;
+        const lower = searchTerm.toLowerCase();
+        return academicPublications.filter(p =>
+            p.title.toLowerCase().includes(lower) ||
+            p.authors.some(a => a.toLowerCase().includes(lower)) ||
+            (p.abstract && p.abstract.toLowerCase().includes(lower)) ||
+            (p.journal && p.journal.toLowerCase().includes(lower))
         );
-    }
+    }, [searchTerm]);
+
+    const resultText = t(filtered.length === 1 ? 'repo.resultCount.one' : 'repo.resultCount.many', {
+        count: filtered.length,
+    });
 
     return (
-        <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-12 flex-grow">
-            <div className="text-center mb-12">
-                 <h2 className="text-3xl md:text-4xl font-extrabold text-white tracking-tight">
-                    {t('repo.title')}
-                </h2>
-                <p className="mt-4 max-w-2xl mx-auto text-lg text-gray-400">
-                    {t('repo.subtitle')}
-                </p>
-                <p className="mt-2 text-sm text-gray-500">
-                    {t('repo.searchHint', { baseQuery: BASE_QUERY })}
-                </p>
-            </div>
+        <div className="bg-stone-50 min-h-screen py-10">
+            <div className="container mx-auto px-4 sm:px-6 lg:px-8 max-w-6xl">
+                <div className="mb-8">
+                    <h1 className="text-2xl font-black text-stone-900 tracking-tight">{t('repo.title')}</h1>
+                    <p className="text-stone-500 text-sm mt-1 max-w-2xl">
+                        {t('repo.subtitle')}
+                    </p>
+                </div>
 
-            <form onSubmit={handleSearch} className="mb-8 p-4 bg-gray-900 rounded-lg border border-gray-800 flex flex-col sm:flex-row gap-4 items-center max-w-3xl mx-auto">
-                <input
-                    type="text"
-                    placeholder={t('repo.searchPlaceholder')}
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                    className="w-full sm:flex-grow bg-gray-800 text-white rounded-md border-gray-700 focus:ring-cyan-500 focus:border-cyan-500"
-                    aria-label={t('repo.searchAria')}
-                />
-                <button 
-                  type="submit"
-                  disabled={loading}
-                  className="w-full sm:w-auto flex items-center justify-center px-5 py-2 bg-cyan-600 text-white rounded-md hover:bg-cyan-700 transition-colors text-sm font-semibold disabled:bg-gray-600 disabled:cursor-not-allowed"
-                >
-                  <SearchIcon className="h-5 w-5 mr-2" />
-                  <span>{loading ? t('repo.searchingButton') : t('repo.searchButton')}</span>
-                </button>
-            </form>
-            
-            <div className="max-w-7xl mx-auto">
-              {renderContent()}
+                {/* Search */}
+                <div className="bg-white p-4 rounded-xl shadow-sm border border-stone-200 mb-6">
+                    <div className="relative">
+                        <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                            <SearchIcon className="h-5 w-5 text-stone-400" />
+                        </div>
+                        <input
+                            type="text"
+                            className="block w-full pl-10 pr-3 py-2.5 border border-stone-300 rounded-lg bg-white placeholder-stone-400 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-teal-500 text-sm"
+                            placeholder={t('repo.searchPlaceholder')}
+                            value={searchTerm}
+                            onChange={(e) => setSearchTerm(e.target.value)}
+                        />
+                    </div>
+                </div>
+
+                <p className="text-xs text-stone-500 mb-4 font-medium">{resultText}</p>
+
+                {/* Papers list */}
+                <div className="space-y-4">
+                    {filtered.map(paper => (
+                        <div key={paper.id} className="bg-white rounded-xl border border-stone-200 p-5 hover:shadow-md hover:border-teal-200 transition-all group">
+                            <div className="flex items-center gap-2 mb-2">
+                                <span className="text-xs text-teal-700 font-bold">{paper.year || t('repo.yearFallback')}</span>
+                                {paper.journal && (
+                                    <>
+                                        <span className="text-stone-300">·</span>
+                                        <span className="text-xs text-stone-500 font-medium">{paper.journal}</span>
+                                    </>
+                                )}
+                            </div>
+                            <h3 className="text-base font-bold text-stone-800 mb-2 group-hover:text-teal-700 transition-colors leading-snug">{paper.title}</h3>
+                            <p className="text-xs text-stone-500 mb-3 font-medium">{paper.authors.join(', ')}</p>
+                            {paper.abstract && (
+                                <p className="text-sm text-stone-500 leading-relaxed line-clamp-3">{paper.abstract}</p>
+                            )}
+                            {paper.link && paper.link !== '#' && (
+                                <a
+                                    href={paper.link}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="inline-block mt-3 text-xs font-bold text-teal-600 hover:text-teal-800 transition-colors"
+                                >
+                                    {t('repo.readMore')}
+                                </a>
+                            )}
+                        </div>
+                    ))}
+                </div>
+
+                {filtered.length === 0 && (
+                    <div className="text-center py-16 text-stone-500">
+                        {t('repo.empty')}
+                    </div>
+                )}
             </div>
-            
-            <style>{`
-                @keyframes fade-in {
-                  from { opacity: 0; transform: translateY(10px); }
-                  to { opacity: 1; transform: translateY(0); }
-                }
-                .animate-fade-in { animation: fade-in 0.5s ease-out forwards; }
-            `}</style>
         </div>
     );
 };

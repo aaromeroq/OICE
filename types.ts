@@ -5,20 +5,42 @@ export type ResearchTopicLabel = 'Financing' | 'Risk Management' | 'Cost-Benefit
 
 export type MapCoordinates = [number, number][];
 
-export interface Project {
+export type CommunityStatus = 'incubacion' | 'activa' | 'estancada' | 'abandonada';
+
+export interface EnergyCommunity {
   id: string;
   name: string;
   region: Region;
   countries: string[];
-  modelType: string;
   summary: string;
-  keyFeatures: string[];
-  challenges: string[];
-  mapCoordinates: MapCoordinates;
-  // New technical details for rich visualization
-  technology: 'AC' | 'HVDC';
-  capacityMW: number;
-  voltageKV: number;
+  mapCoordinates: [number, number]; // Singular coordinate for Scatterplot (Lng, Lat)
+  status: CommunityStatus;
+  
+  // Taxonomía de 4 Dimensiones + Frameworks Académicos
+  dimensionTE: {
+    technology: string;
+    capacityMW?: number;
+    description: string;
+    tisScore?: number[]; // 7 Funciones TIS (1-5)
+  };
+  dimensionGO: {
+    model: string;
+    membersCount?: number;
+    description: string;
+    ostromChecklist?: boolean[]; // 8 Principios de Ostrom
+  };
+  dimensionRF: {
+    legalStatus: string;
+    financingMechanism: string;
+    description: string;
+    isRegulatoryDivideAffected: boolean;
+    regulatoryNotes?: string;
+  };
+  dimensionAS: {
+    localImpact: string;
+    description: string;
+    emancipationLevel: number; // 1-5 (RIPCEL Scale)
+  };
 }
 
 export interface ResearchTopic {
@@ -48,4 +70,12 @@ export interface AcademicPublication {
   abstract: string | null;
   link: string;
   journal: string | null;
+}
+
+export interface NetworkMember {
+  name: string;
+  institution: string;
+  country: string;
+  role: string;
+  email: string;
 }

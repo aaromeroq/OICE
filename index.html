@@ -4,20 +4,208 @@
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/vite.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>OIRSE</title>
-    
+    <title>OICE — Observatorio Iberoamericano de Comunidades Energéticas</title>
+
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+
     <!-- Leaflet CSS -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
      integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
      crossorigin=""/>
-    
+
     <!-- Leaflet JS -->
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
      integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
      crossorigin=""></script>
-     
+
     <script src="https://cdn.tailwindcss.com"></script>
-  <script type="importmap">
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            fontFamily: {
+              sans: ['Inter', 'ui-sans-serif', 'system-ui', 'sans-serif'],
+              serif: ['"Instrument Serif"', 'ui-serif', 'Georgia', 'serif'],
+              mono: ['"JetBrains Mono"', 'ui-monospace', 'monospace'],
+            },
+            colors: {
+              ivory: {
+                50:  '#FBF8F2',
+                100: '#F6F1E6',
+                200: '#EDE5D2',
+                300: '#DFD3B5',
+              },
+              moss: {
+                50:  '#EEF2EE',
+                100: '#D7E0D8',
+                200: '#A9BCAC',
+                300: '#78907D',
+                500: '#3F5B47',
+                700: '#263D30',
+                800: '#1C2F25',
+                900: '#11201A',
+              },
+              copper: {
+                300: '#E2A678',
+                400: '#D18751',
+                500: '#B5631F',
+                600: '#944F14',
+                700: '#6E3A0D',
+              },
+              clay: {
+                400: '#CE8A73',
+                500: '#B5644A',
+                600: '#8E4B35',
+              },
+              /* Latin American accents */
+              jade:  { 400: '#4FA58A', 500: '#2E8570', 700: '#1B5546' },   /* mesoamerican green */
+              anil:  { 400: '#4A6B9A', 500: '#2E4E7E', 700: '#1B3559' },   /* añil / indigo textile */
+              maize: { 400: '#E8B84E', 500: '#D39A26', 600: '#A8771A' },   /* corn / saffron */
+              ink: '#14181A',
+            },
+            letterSpacing: {
+              'tightest': '-0.04em',
+              'display': '-0.03em',
+            },
+            boxShadow: {
+              'editorial': '0 1px 0 rgba(20,24,26,0.06), 0 24px 48px -24px rgba(20,24,26,0.14)',
+              'soft': '0 1px 2px rgba(20,24,26,0.04), 0 8px 24px -12px rgba(20,24,26,0.10)',
+            },
+          },
+        },
+      };
+    </script>
+
+    <style>
+      :root { color-scheme: light; }
+      html, body { -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; }
+      body {
+        font-family: 'Inter', ui-sans-serif, system-ui, sans-serif;
+        background-color: #FBF8F2;
+        color: #14181A;
+        background-image:
+          radial-gradient(1200px 600px at 80% -10%, rgba(181,99,31,0.06), transparent 60%),
+          radial-gradient(900px 500px at -10% 30%, rgba(38,61,48,0.07), transparent 60%);
+      }
+      /* subtle paper grain */
+      body::before {
+        content: '';
+        position: fixed; inset: 0;
+        pointer-events: none;
+        z-index: 0;
+        opacity: 0.035;
+        background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' seed='7'/><feColorMatrix values='0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 0.55 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
+        mix-blend-mode: multiply;
+      }
+      #root { position: relative; z-index: 1; }
+      .font-display { font-family: 'Instrument Serif', ui-serif, Georgia, serif; letter-spacing: -0.02em; }
+      .font-italic-display { font-family: 'Instrument Serif', ui-serif, Georgia, serif; font-style: italic; letter-spacing: -0.02em; }
+      .text-balance { text-wrap: balance; }
+      .text-pretty { text-wrap: pretty; }
+      .hairline { border-color: rgba(20,24,26,0.10); }
+      .hairline-strong { border-color: rgba(20,24,26,0.18); }
+      ::selection { background: #1C2F25; color: #FBF8F2; }
+
+      /* ───────── Global typography — unified across every page ───────── */
+      h1, h2, h3, h4, .heading {
+        font-family: 'Instrument Serif', ui-serif, Georgia, serif !important;
+        letter-spacing: -0.02em;
+        font-weight: 400 !important;
+      }
+      h1 { line-height: 0.98; }
+      h2 { line-height: 1.02; }
+      h3 { line-height: 1.1; }
+      h5, h6 {
+        font-family: 'Inter', ui-sans-serif, system-ui, sans-serif;
+        font-weight: 600;
+        letter-spacing: -0.01em;
+      }
+      /* UI chrome stays sans regardless of parent overrides */
+      .ui-label, .ui-text, button, input, select, textarea, label, nav, th, td {
+        font-family: 'JetBrains Mono', ui-sans-serif, system-ui, sans-serif;
+      }
+      code, pre, .font-mono {
+        font-family: 'JetBrains Mono', ui-monospace, monospace;
+      }
+
+      /* ───────── Hero globe blend — positioned on the right, blends left ───────── */
+      .globe-blend {
+        -webkit-mask-image: radial-gradient(ellipse 80% 75% at 70% 50%, #000 55%, rgba(0,0,0,0.85) 72%, rgba(0,0,0,0) 100%);
+                mask-image: radial-gradient(ellipse 80% 75% at 70% 50%, #000 55%, rgba(0,0,0,0.85) 72%, rgba(0,0,0,0) 100%);
+      }
+      @media (max-width: 1023px) {
+        .globe-blend {
+          -webkit-mask-image: radial-gradient(ellipse 90% 70% at 50% 50%, #000 55%, rgba(0,0,0,0.75) 75%, rgba(0,0,0,0) 100%);
+                  mask-image: radial-gradient(ellipse 90% 70% at 50% 50%, #000 55%, rgba(0,0,0,0.75) 75%, rgba(0,0,0,0) 100%);
+        }
+      }
+
+      /* ───────── Latin American decorative layer ───────── */
+
+      /* Andean stepped frieze (greca escalonada) — used on thin strips/dividers */
+      .pat-greca {
+        background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='48' height='16' viewBox='0 0 48 16' fill='none' stroke='currentColor' stroke-width='1.2'><path d='M0 12 H8 V8 H16 V4 H24 V8 H32 V12 H40 V8 H48'/></svg>");
+        background-repeat: repeat-x;
+        background-size: 48px 16px;
+      }
+
+      /* Huipil/Aguayo woven rhombus pattern — diamond weave */
+      .pat-rombo {
+        background-image:
+          url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='32' height='32' viewBox='0 0 32 32' fill='none' stroke='currentColor' stroke-width='0.9'><path d='M16 2 L30 16 L16 30 L2 16 Z'/><path d='M16 8 L24 16 L16 24 L8 16 Z'/><path d='M16 12 L20 16 L16 20 L12 16 Z'/></svg>");
+        background-repeat: repeat;
+        background-size: 32px 32px;
+      }
+
+      /* Talavera-like small tile scatter */
+      .pat-tile {
+        background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='40' height='40' viewBox='0 0 40 40' fill='none' stroke='currentColor' stroke-width='0.8'><circle cx='20' cy='20' r='6'/><path d='M20 4 V10 M20 30 V36 M4 20 H10 M30 20 H36'/><path d='M20 14 L26 20 L20 26 L14 20 Z'/></svg>");
+        background-repeat: repeat;
+        background-size: 40px 40px;
+      }
+
+      /* Chakana / stepped Andean cross — used as glyph mark */
+      .glyph-chakana {
+        width: 1em; height: 1em;
+        background-color: currentColor;
+        -webkit-mask: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path d='M10 2 H14 V6 H18 V10 H22 V14 H18 V18 H14 V22 H10 V18 H6 V14 H2 V10 H6 V6 H10 Z M11 11 V13 H13 V11 Z' fill='black'/></svg>") center / contain no-repeat;
+                mask: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path d='M10 2 H14 V6 H18 V10 H22 V14 H18 V18 H14 V22 H10 V18 H6 V14 H2 V10 H6 V6 H10 Z M11 11 V13 H13 V11 Z' fill='black'/></svg>") center / contain no-repeat;
+        display: inline-block;
+      }
+
+      /* Sol-inti stepped sun ornament */
+      .glyph-sol {
+        width: 1em; height: 1em;
+        background-color: currentColor;
+        -webkit-mask: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><circle cx='12' cy='12' r='4'/><path d='M12 1 V5 M12 19 V23 M1 12 H5 M19 12 H23 M4 4 L7 7 M17 17 L20 20 M20 4 L17 7 M7 17 L4 20' stroke='black' stroke-width='1.5' fill='none'/></svg>") center / contain no-repeat;
+                mask: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><circle cx='12' cy='12' r='4'/><path d='M12 1 V5 M12 19 V23 M1 12 H5 M19 12 H23 M4 4 L7 7 M17 17 L20 20 M20 4 L17 7 M7 17 L4 20' stroke='black' stroke-width='1.5' fill='none'/></svg>") center / contain no-repeat;
+        display: inline-block;
+      }
+
+      /* Thin decorative divider line with greca — reveals on any color */
+      .greca-divider {
+        position: relative;
+        height: 16px;
+        color: rgba(20,24,26,0.35);
+      }
+      .greca-divider::before {
+        content: ''; position: absolute; inset: 0;
+        background: inherit;
+      }
+
+      /* Subtle repeating weave background tint */
+      .bg-weave {
+        background-color: #FBF8F2;
+        background-image:
+          repeating-linear-gradient(45deg,  rgba(181,99,31,0.04) 0 2px, transparent 2px 10px),
+          repeating-linear-gradient(-45deg, rgba(46,133,112,0.04) 0 2px, transparent 2px 10px);
+      }
+    </style>
+
+    <script type="importmap">
 {
   "imports": {
     "react": "https://esm.sh/react@18.2.0",
@@ -31,7 +219,7 @@
 }
 </script>
 </head>
-  <body class="bg-gray-950 text-gray-100">
+  <body class="bg-ivory-50 text-ink antialiased">
     <div id="root"></div>
     <script type="module" src="/index.tsx"></script>
   </body>
