@@ -8,7 +8,7 @@ import { useLanguage } from '../i18n';
 
 const GlobeComponent = lazy(() => import('./Globe'));
 
-type Tab = 'home' | 'atlas' | 'legislation' | 'catastro' | 'repository' | 'ai' | 'links' | 'members' | 'news';
+import { Tab } from './Header';
 
 interface HomeProps {
     setActiveTab: (tab: Tab) => void;

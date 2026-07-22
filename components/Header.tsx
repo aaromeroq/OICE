@@ -3,14 +3,22 @@ import { MapIcon, LibraryIcon, BookOpenIcon, BriefcaseIcon, LinkIcon, ChatIcon, 
 import { TransparentLogo } from './TransparentLogo';
 import { useLanguage } from '../i18n';
 
-type Tab = 'home' | 'atlas' | 'legislation' | 'catastro' | 'repository' | 'ai' | 'links' | 'members' | 'news';
+export type Tab = 'home' | 'atlas' | 'legislation' | 'catastro' | 'repository' | 'ai' | 'links' | 'members' | 'news' | 'admin';
 
 interface HeaderProps {
   activeTab: Tab;
   setActiveTab: (tab: Tab) => void;
+  userProfile: {
+    uid: string;
+    name: string;
+    email: string;
+    role: string;
+    approved: boolean;
+  } | null;
+  onLogout: () => void;
 }
 
-export const Header: React.FC<HeaderProps> = ({ activeTab, setActiveTab }) => {
+export const Header: React.FC<HeaderProps> = ({ activeTab, setActiveTab, userProfile, onLogout }) => {
   const { language, setLanguage, t } = useLanguage();
   const [mobileOpen, setMobileOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
@@ -32,6 +40,10 @@ export const Header: React.FC<HeaderProps> = ({ activeTab, setActiveTab }) => {
     { id: 'members', label: t('tabs.members'), icon: UsersIcon },
     { id: 'links', label: t('tabs.links'), icon: LinkIcon },
   ];
+
+  if (userProfile?.role === 'admin') {
+    tabs.push({ id: 'admin', label: 'Admin', icon: BriefcaseIcon });
+  }
 
   return (
     <header
@@ -88,6 +100,21 @@ export const Header: React.FC<HeaderProps> = ({ activeTab, setActiveTab }) => {
                 </button>
               ))}
             </div>
+
+            {userProfile && (
+              <div className="hidden md:flex items-center gap-2">
+                <span className="text-[10px] font-semibold bg-moss-50 border border-moss-200 text-moss-800 px-2.5 py-1 rounded-full font-mono">
+                  {userProfile.name} {userProfile.role === 'admin' ? '(Admin)' : ''}
+                </span>
+                <button
+                  onClick={onLogout}
+                  className="px-3 py-1 text-[10px] font-semibold rounded-full border border-red-200 text-red-700 hover:bg-red-50 transition-all font-mono uppercase tracking-wider"
+                  type="button"
+                >
+                  Salir
+                </button>
+              </div>
+            )}
 
             {/* Hamburger — shown below xl (so 9-tab nav never needs horizontal scroll) */}
             <button
@@ -152,6 +179,21 @@ export const Header: React.FC<HeaderProps> = ({ activeTab, setActiveTab }) => {
                 <span>{tab.label}</span>
               </button>
             ))}
+
+            {userProfile && (
+              <div className="border-t border-stone-200 mt-3 pt-3 px-3 flex items-center justify-between">
+                <span className="text-xs font-semibold font-mono text-moss-800">
+                  {userProfile.name}
+                </span>
+                <button
+                  onClick={() => { onLogout(); setMobileOpen(false); }}
+                  className="px-3 py-1.5 text-xs font-semibold rounded-full border border-red-200 text-red-700 hover:bg-red-50 transition-all font-mono uppercase tracking-wider"
+                  type="button"
+                >
+                  Cerrar Sesión
+                </button>
+              </div>
+            )}
           </div>
         </div>
       )}
