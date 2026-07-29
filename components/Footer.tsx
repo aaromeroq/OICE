@@ -32,7 +32,7 @@ export const Footer: React.FC = () => {
               {t('header.network')}
             </div>
             <div className="flex items-center gap-4 mb-4">
-              <TransparentLogo src="/RIPCEL.png" alt="RIPCEL" className="h-10 object-contain" />
+              <TransparentLogo src="/RIPCEL_dark.png" alt="RIPCEL" className="h-10 object-contain" />
               <span className="w-px h-8 bg-ivory-100/20"></span>
               <TransparentLogo src="/CYTED.png" alt="CYTED" className="h-10 object-contain" />
             </div>
@@ -50,7 +50,7 @@ export const Footer: React.FC = () => {
             © {year} · OICE · Observatorio Iberoamericano de Comunidades Energéticas
           </p>
           <div className="flex items-center gap-3">
-            <TransparentLogo src="/RIPCEL.png" alt="RIPCEL" className="h-5 object-contain" />
+            <TransparentLogo src="/RIPCEL_dark.png" alt="RIPCEL" className="h-5 object-contain" />
             <TransparentLogo src="/CYTED.png" alt="CYTED" className="h-5 object-contain" />
           </div>
         </div>
