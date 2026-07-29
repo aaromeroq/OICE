@@ -77,9 +77,9 @@ export const Header: React.FC<HeaderProps> = ({ activeTab, setActiveTab, userPro
 
           <div className="flex items-center gap-5">
             <div className="hidden xl:flex items-center gap-3 text-right">
-              <TransparentLogo src="/RIPCEL.png" alt="RIPCEL" className="h-8 object-contain" />
-              <span className="w-px h-6 bg-ink/10"></span>
-              <TransparentLogo src="/CYTED.png" alt="CYTED" className="h-8 object-contain" />
+              <TransparentLogo src="/RIPCEL.png" alt="RIPCEL" className="h-12 object-contain" />
+              <span className="w-px h-8 bg-ink/10"></span>
+              <TransparentLogo src="/CYTED.png" alt="CYTED" className="h-12 object-contain" />
             </div>
 
             {/* Language toggle */}

@@ -17,6 +17,7 @@ import { AdminDashboard } from './components/AdminDashboard';
 import { auth, db } from './firebase';
 import { onAuthStateChanged, signOut } from 'firebase/auth';
 import { doc, getDoc, collection, query, where, getDocs } from 'firebase/firestore';
+import { InstitutionsCarousel } from './components/InstitutionsCarousel';
 
 const App: React.FC = () => {
   const [selectedCommunity, setSelectedCommunity] = useState<EnergyCommunity | null>(null);
@@ -192,6 +193,7 @@ const App: React.FC = () => {
       <main className="flex-grow flex flex-col">
         {renderContent()}
       </main>
+      <InstitutionsCarousel />
       <Footer />
       <ProjectDetailModal project={selectedCommunity} onClose={handleCloseModal} />
     </div>
