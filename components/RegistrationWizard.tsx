@@ -25,6 +25,7 @@ export const RegistrationWizard: React.FC<RegistrationWizardProps> = ({ userProf
   const [error, setError] = useState<string | null>(null);
 
   // AI Assistant states (Step 0)
+  const [selectedModel, setSelectedModel] = useState<string>('gemini-3.6-flash');
   const [searchMode, setSearchMode] = useState<'web' | 'text'>('web');
   const [searchQuery, setSearchQuery] = useState('');
   const [pastedText, setPastedText] = useState('');
@@ -236,7 +237,7 @@ Estructura JSON requerida obligatoriamente:
       }
 
       // v1beta Generative Language API
-      const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${keyToUse}`;
+      const url = `https://generativelanguage.googleapis.com/v1beta/models/${selectedModel}:generateContent?key=${keyToUse}`;
       
       const response = await fetch(url, {
         method: 'POST',
@@ -603,19 +604,35 @@ Estructura JSON requerida obligatoriamente:
                   Nuestra IA de Gemini extraerá los indicadores estructurados bajo la taxonomía RIPCEL y pre-llenará todo el formulario para tu revisión.
                 </p>
 
-                {/* API Key Setup */}
-                <div className="bg-stone-50 border border-stone-200 rounded-xl p-4">
-                  <label className="block text-[10px] font-semibold uppercase tracking-wider text-ink/65 mb-1 font-mono">
-                    Google Gemini API Key
-                  </label>
-                  <input
-                    type="password"
-                    value={geminiApiKey}
-                    onChange={(e) => setGeminiApiKey(e.target.value)}
-                    placeholder={import.meta.env.VITE_GEMINI_API_KEY ? "•••••••••••••••• (Configurada en el Servidor)" : "Ingresa tu API Key de Gemini..."}
-                    className="w-full px-4 py-2 rounded-lg border border-stone-200 focus:outline-none focus:border-moss-500 text-xs font-mono bg-white"
-                  />
-                  <span className="block text-[9px] text-ink/45 mt-1 leading-normal font-mono">
+                {/* API Key and Model Setup */}
+                <div className="bg-stone-50 border border-stone-200 rounded-xl p-4 grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-[10px] font-semibold uppercase tracking-wider text-ink/65 mb-1 font-mono">
+                      Modelo Gemini
+                    </label>
+                    <select
+                      value={selectedModel}
+                      onChange={(e) => setSelectedModel(e.target.value)}
+                      className="w-full px-3 py-2 rounded-lg border border-stone-200 focus:outline-none focus:border-moss-500 text-xs bg-white font-mono"
+                    >
+                      <option value="gemini-3.6-flash">Gemini 3.6 Flash (Recomendado)</option>
+                      <option value="gemini-3.5-flash">Gemini 3.5 Flash</option>
+                      <option value="gemini-1.5-flash">Gemini 1.5 Flash (Legacy)</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-[10px] font-semibold uppercase tracking-wider text-ink/65 mb-1.5 font-mono">
+                      Google Gemini API Key
+                    </label>
+                    <input
+                      type="password"
+                      value={geminiApiKey}
+                      onChange={(e) => setGeminiApiKey(e.target.value)}
+                      placeholder={import.meta.env.VITE_GEMINI_API_KEY ? "•••••••••••••••• (Configurada en el Servidor)" : "Ingresa tu API Key de Gemini..."}
+                      className="w-full px-3 py-2 rounded-lg border border-stone-200 focus:outline-none focus:border-moss-500 text-xs font-mono bg-white"
+                    />
+                  </div>
+                  <span className="col-span-1 md:col-span-2 block text-[9px] text-ink/45 leading-normal font-mono">
                     Necesitas una API Key para que el navegador llame a Gemini. Consigue una gratis en <a href="https://aistudio.google.com/" target="_blank" rel="noopener noreferrer" className="text-moss-700 underline font-semibold">Google AI Studio</a>.
                   </span>
                 </div>
