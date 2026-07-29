@@ -3,7 +3,7 @@ import { db, auth } from '../firebase';
 import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
 import { iberoamericanCountries } from '../data/countries';
 import { useLanguage } from '../i18n';
-import { BriefcaseIcon, MapIcon, ScaleIcon, UsersIcon, BookOpenIcon } from './Icons';
+import { BriefcaseIcon, MapIcon, ScaleIcon, UsersIcon, BookOpenIcon, ZapIcon } from './Icons';
 import { AuthComponent } from './AuthComponent';
 
 interface RegistrationWizardProps {
@@ -19,10 +19,21 @@ interface RegistrationWizardProps {
 
 export const RegistrationWizard: React.FC<RegistrationWizardProps> = ({ userProfile, onLoginSuccess }) => {
   const { t } = useLanguage();
-  const [currentStep, setCurrentStep] = useState(1);
+  const [currentStep, setCurrentStep] = useState(0); // Starts at Step 0: AI Assistant
   const [submitting, setSubmitting] = useState(false);
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  // AI Assistant states (Step 0)
+  const [searchMode, setSearchMode] = useState<'web' | 'text'>('web');
+  const [searchQuery, setSearchQuery] = useState('');
+  const [pastedText, setPastedText] = useState('');
+  const [aiLoading, setAiLoading] = useState(false);
+  const [extractedSummary, setExtractedSummary] = useState<string | null>(null);
+  const [extractedGrounding, setExtractedGrounding] = useState<any[]>([]);
+  const [geminiApiKey, setGeminiApiKey] = useState<string>(() => {
+    return localStorage.getItem('oice_gemini_api_key') || import.meta.env.VITE_GEMINI_API_KEY || '';
+  });
 
   // Form states
   // Step 1: Identification
@@ -130,6 +141,230 @@ export const RegistrationWizard: React.FC<RegistrationWizardProps> = ({ userProf
     }
   };
 
+  const handleAIExtract = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError(null);
+    setAiLoading(true);
+    setExtractedSummary(null);
+    setExtractedGrounding([]);
+
+    const keyToUse = geminiApiKey.trim();
+    if (!keyToUse) {
+      setError('Por favor, ingresa tu clave API de Gemini.');
+      setAiLoading(false);
+      return;
+    }
+
+    localStorage.setItem('oice_gemini_api_key', keyToUse);
+
+    try {
+      const prompt = searchMode === 'web' 
+        ? `Busca en Google e identifica los datos del proyecto de comunidad energética o generación distribuida colectiva '${searchQuery.trim()}'.`
+        : `Analiza el siguiente texto e identifica los datos de la comunidad energética descrita:\n\n${pastedText.trim()}`;
+
+      const systemPrompt = `Eres un Asistente Científico experto en Comunidades Energéticas para el Observatorio OICE y la red RIPCEL.
+Analiza la información proporcionada (o busca en la web sobre ella) y extrae todos los datos técnicos, de gobernanza, regulatorios e impacto social.
+Debes responder ÚNICAMENTE con un objeto JSON válido. No agregues explicaciones, introducciones o markdown fuera de las llaves del JSON.
+Si no encuentras información para algún campo específico, pon null o un string vacío. No inventes datos.
+Estructura JSON requerida obligatoriamente:
+{
+  "name": "Nombre de la comunidad",
+  "description": "Resumen general de los objetivos, historia y participantes del proyecto en español",
+  "country": "Nombre del país de Iberoamérica en español (debe coincidir con la lista de 15 países, ej. España, Portugal, México, Costa Rica, Colombia, Brasil, Argentina, Chile, Perú, Ecuador, etc.)",
+  "location": {
+    "lat": latitud decimal aproximada o real del proyecto,
+    "lng": longitud decimal aproximada o real del proyecto
+  },
+  "status": "activa" | "incubacion" | "estancada" | "abandonada",
+  "dimensionTechnology": {
+    "techTypes": ["solar_pv", "wind", "hydrokinetic", "biomass", "hybrid", "other"] (lista de tipos presentes, ej. ["solar_pv"]),
+    "techTypesCustom": "especificación si hay 'other'",
+    "scaleKw": capacidad en kW numérico,
+    "storageKwh": capacidad de almacenamiento en kWh numérico (0 si no tiene),
+    "digitalization": "descripción breve del equipamiento digital (medidores inteligentes, blockchain, etc.)",
+    "interoperability": "descripción de interoperabilidad con la red"
+  },
+  "dimensionGovernance": {
+    "legalForm": "cooperative" | "association" | "municipal_public" | "informal" | "ethnic_indigenous" | "other",
+    "legalFormCustom": "especificar otra forma jurídica",
+    "membersCount": número de miembros o familias participantes,
+    "decisionMechanism": "ej. Un miembro, un voto / Consenso",
+    "ownershipModel": "ej. Propiedad colectiva / Comunitaria",
+    "leadershipModel": "ej. Consejo Directivo / Liderazgo informal",
+    "genderEquityDescription": "descripción de la participación de género en roles directivos",
+    "ostromPrinciples": [lista de números del 1 al 8 correspondientes a los principios de Ostrom presentes (ej. [1, 2, 3])]
+  },
+  "dimensionRegulatoryFinancial": {
+    "legalFramework": "marco legal o leyes aplicadas",
+    "compensationRegime": "ej. Net Billing / Inyección a red",
+    "incentives": "ej. Exención de impuestos / Subsidio",
+    "financingMechanism": ["public_funds", "international_cooperation", "cooperative_capital", "crowdfunding", "other"] (lista de mecanismos usados),
+    "financingMechanismCustom": "especificar si hay 'other'"
+  },
+  "dimensionSocialAppropriation": {
+    "distributiveJustice": "descripción de justicia distributiva (beneficios económicos y energía)",
+    "proceduralJustice": "descripción de justicia procedimental (participación en el diseño)",
+    "recognitionJustice": "descripción de justicia de reconocimiento (respeto de saberes o derechos locales)",
+    "restorativeJustice": "descripción de justicia restaurativa (remediación de exclusión energética)",
+    "energyPovertyReduction": "descripción de la mitigación de pobreza energética",
+    "empowermentOutcomes": "descripción de autonomía alcanzada y tejido social"
+  },
+  "dimensionDissemination": {
+    "openScience": "ej. Datos abiertos, publicaciones",
+    "training": "ej. Capacitación en mantenimiento",
+    "communication": "ej. Reuniones informativas",
+    "territorialArticulation": "ej. Alianza con la universidad local"
+  }
+}`;
+
+      const fullPrompt = `${systemPrompt}\n\nInstrucción de usuario:\n${prompt}`;
+
+      const payload: any = {
+        contents: [
+          {
+            parts: [
+              {
+                text: fullPrompt
+              }
+            ]
+          }
+        ]
+      };
+
+      if (searchMode === 'web') {
+        payload.tools = [{ googleSearch: {} }];
+      }
+
+      // v1beta Generative Language API
+      const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${keyToUse}`;
+      
+      const response = await fetch(url, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(payload)
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData?.error?.message || `Error en la API de Gemini: ${response.status}`);
+      }
+
+      const resData = await response.json();
+      if (!resData.candidates || !resData.candidates[0]) {
+        throw new Error('La API de Gemini no devolvió respuestas.');
+      }
+
+      let text = resData.candidates[0].content.parts[0].text.trim();
+      
+      if (text.startsWith('```')) {
+        const firstNewline = text.indexOf('\n');
+        if (firstNewline !== -1) {
+          text = text.substring(firstNewline + 1);
+        }
+        if (text.endsWith('```')) {
+          text = text.substring(0, text.length - 3);
+        }
+        text = text.trim();
+      }
+      if (text.startsWith('json')) {
+        text = text.substring(4).trim();
+      }
+
+      const parsed = JSON.parse(text);
+      
+      // Step 1: Identification
+      if (parsed.name) setName(parsed.name);
+      if (parsed.description) setDescription(parsed.description);
+      if (parsed.country) {
+        const matched = iberoamericanCountries.find(
+          c => c.name.toLowerCase() === parsed.country.toLowerCase() ||
+               parsed.country.toLowerCase().includes(c.name.toLowerCase()) ||
+               c.name.toLowerCase().includes(parsed.country.toLowerCase())
+        );
+        if (matched) setCountry(matched.name);
+      }
+      if (parsed.location?.lat) setLat(String(parsed.location.lat));
+      if (parsed.location?.lng) setLng(String(parsed.location.lng));
+      if (parsed.status) setStatus(parsed.status);
+
+      // Step 2: Technology
+      if (parsed.dimensionTechnology) {
+        const tech = parsed.dimensionTechnology;
+        if (tech.techTypes) setTechTypes(tech.techTypes);
+        if (tech.techTypesCustom) setTechTypesCustom(tech.techTypesCustom);
+        if (tech.scaleKw) setScaleKw(String(tech.scaleKw));
+        if (tech.storageKwh) setStorageKwh(String(tech.storageKwh));
+        if (tech.digitalization) setDigitalization(tech.digitalization);
+        if (tech.interoperability) setInteroperability(tech.interoperability);
+      }
+
+      // Step 3: Governance
+      if (parsed.dimensionGovernance) {
+        const gov = parsed.dimensionGovernance;
+        if (gov.legalForm) setLegalForm(gov.legalForm);
+        if (gov.legalFormCustom) setLegalFormCustom(gov.legalFormCustom);
+        if (gov.membersCount) setMembersCount(String(gov.membersCount));
+        if (gov.decisionMechanism) setDecisionMechanism(gov.decisionMechanism);
+        if (gov.ownershipModel) setOwnershipModel(gov.ownershipModel);
+        if (gov.leadershipModel) setLeadershipModel(gov.leadershipModel);
+        if (gov.genderEquityDescription) setGenderEquity(gov.genderEquityDescription);
+        if (gov.ostromPrinciples) setOstromPrinciples(gov.ostromPrinciples);
+      }
+
+      // Step 4: Regulatory
+      if (parsed.dimensionRegulatoryFinancial) {
+        const reg = parsed.dimensionRegulatoryFinancial;
+        if (reg.legalFramework) setLegalFramework(reg.legalFramework);
+        if (reg.compensationRegime) setCompensationRegime(reg.compensationRegime);
+        if (reg.incentives) setIncentives(reg.incentives);
+        if (reg.financingMechanism) setFinancingMechanism(reg.financingMechanism);
+        if (reg.financingMechanismCustom) setFinancingMechanismCustom(reg.financingMechanismCustom);
+      }
+
+      // Step 5: Social Appropriation
+      if (parsed.dimensionSocialAppropriation) {
+        const soc = parsed.dimensionSocialAppropriation;
+        if (soc.distributiveJustice) setDistributiveJustice(soc.distributiveJustice);
+        if (soc.proceduralJustice) setProceduralJustice(soc.proceduralJustice);
+        if (soc.recognitionJustice) setRecognitionJustice(soc.recognitionJustice);
+        if (soc.restorativeJustice) setRestorativeJustice(soc.restorativeJustice);
+        if (soc.energyPovertyReduction) setEnergyPoverty(soc.energyPovertyReduction);
+        if (soc.empowermentOutcomes) setEmpowerment(soc.empowermentOutcomes);
+      }
+
+      if (parsed.dimensionDissemination) {
+        const diss = parsed.dimensionDissemination;
+        if (diss.openScience) setOpenScience(diss.openScience);
+        if (diss.training) setTraining(diss.training);
+        if (diss.communication) setCommunication(diss.communication);
+        if (diss.territorialArticulation) setTerritorialArticulation(diss.territorialArticulation);
+      }
+
+      setExtractedSummary(
+        `Se ha extraído con éxito la información de "${parsed.name || searchQuery}".
+        - País: ${parsed.country || 'N/D'}
+        - Ubicación: [${parsed.location?.lat || 'N/D'}, ${parsed.location?.lng || 'N/D'}]
+        - Capacidad: ${parsed.dimensionTechnology?.scaleKw || '0'} kW
+        - Forma Jurídica: ${parsed.dimensionGovernance?.legalForm || 'N/D'}`
+      );
+
+      if (resData.candidates[0].groundingMetadata) {
+        const chunks = resData.candidates[0].groundingMetadata.groundingChunks || [];
+        const sources = chunks
+          .filter((c: any) => c.web)
+          .map((c: any) => ({ title: c.web.title, uri: c.web.uri }));
+        setExtractedGrounding(sources);
+      }
+    } catch (err: any) {
+      console.error(err);
+      setError(`Error al extraer datos con IA: ${err.message || 'Comprueba tu API Key o conexión.'}`);
+    } finally {
+      setAiLoading(false);
+    }
+  };
+
   const handleNext = () => {
     setError(null);
     if (currentStep === 1) {
@@ -187,7 +422,6 @@ export const RegistrationWizard: React.FC<RegistrationWizardProps> = ({ userProf
           ownershipModel: ownershipModel.trim() || null,
           leadershipModel: leadershipModel.trim() || null,
           genderEquityDescription: genderEquity.trim() || null,
-          // Map Ostrom principles to boolean values
           ostromPrinciples: {
             dp1: ostromPrinciples.includes(1),
             dp2: ostromPrinciples.includes(2),
@@ -215,7 +449,7 @@ export const RegistrationWizard: React.FC<RegistrationWizardProps> = ({ userProf
           restorativeJustice: restorativeJustice.trim() || null,
           energyPovertyReduction: energyPoverty.trim() || null,
           empowermentOutcomes: empowerment.trim() || null,
-          indigenousSovereignty: null // Derived or custom if needed
+          indigenousSovereignty: null
         },
 
         dimensionDissemination: {
@@ -237,9 +471,13 @@ export const RegistrationWizard: React.FC<RegistrationWizardProps> = ({ userProf
   };
 
   const handleReset = () => {
-    setCurrentStep(1);
+    setCurrentStep(0);
     setSuccess(false);
     setError(null);
+    setSearchQuery('');
+    setPastedText('');
+    setExtractedSummary(null);
+    setExtractedGrounding([]);
     setName('');
     setDescription('');
     setCountry(iberoamericanCountries[0].name);
@@ -300,7 +538,7 @@ export const RegistrationWizard: React.FC<RegistrationWizardProps> = ({ userProf
     );
   }
 
-  const stepsLabels = ['Identificación', 'Tecnología', 'Gobernanza', 'Regulación', 'Apropiación'];
+  const stepsLabels = ['Asistente IA', 'Identificación', 'Tecnología', 'Gobernanza', 'Regulación', 'Apropiación'];
 
   return (
     <div className="bg-ivory-50 py-12 px-6 flex-grow flex flex-col justify-center">
@@ -318,7 +556,7 @@ export const RegistrationWizard: React.FC<RegistrationWizardProps> = ({ userProf
         {/* Step Indicator */}
         <div className="flex justify-between items-center mb-10 max-w-2xl mx-auto font-mono text-[10px]">
           {stepsLabels.map((label, idx) => {
-            const stepNum = idx + 1;
+            const stepNum = idx; // 0 to 5
             const isActive = currentStep === stepNum;
             const isCompleted = currentStep > stepNum;
             return (
@@ -352,6 +590,149 @@ export const RegistrationWizard: React.FC<RegistrationWizardProps> = ({ userProf
         {/* Form Container */}
         <div className="bg-white rounded-2xl border border-stone-200 shadow-editorial p-8 max-w-2xl mx-auto">
           <form onSubmit={handleFormSubmit} className="space-y-6 font-sans">
+            {/* STEP 0: AI ASSISTANT */}
+            {currentStep === 0 && (
+              <div className="space-y-4">
+                <div className="flex items-center gap-3 border-b hairline pb-3 mb-4">
+                  <ZapIcon className="h-5 w-5 text-moss-700" />
+                  <h4 className="font-display text-lg text-ink font-semibold">Paso 0: Asistente de Carga Rápida con IA</h4>
+                </div>
+
+                <p className="text-xs text-ink/75 leading-relaxed">
+                  Busca la comunidad energética en internet o pega un reporte detallado. 
+                  Nuestra IA de Gemini extraerá los indicadores estructurados bajo la taxonomía RIPCEL y pre-llenará todo el formulario para tu revisión.
+                </p>
+
+                {/* API Key Setup */}
+                <div className="bg-stone-50 border border-stone-200 rounded-xl p-4">
+                  <label className="block text-[10px] font-semibold uppercase tracking-wider text-ink/65 mb-1 font-mono">
+                    Google Gemini API Key
+                  </label>
+                  <input
+                    type="password"
+                    value={geminiApiKey}
+                    onChange={(e) => setGeminiApiKey(e.target.value)}
+                    placeholder={import.meta.env.VITE_GEMINI_API_KEY ? "•••••••••••••••• (Configurada en el Servidor)" : "Ingresa tu API Key de Gemini..."}
+                    className="w-full px-4 py-2 rounded-lg border border-stone-200 focus:outline-none focus:border-moss-500 text-xs font-mono bg-white"
+                  />
+                  <span className="block text-[9px] text-ink/45 mt-1 leading-normal font-mono">
+                    Necesitas una API Key para que el navegador llame a Gemini. Consigue una gratis en <a href="https://aistudio.google.com/" target="_blank" rel="noopener noreferrer" className="text-moss-700 underline font-semibold">Google AI Studio</a>.
+                  </span>
+                </div>
+
+                {/* Toggle search mode */}
+                <div className="flex gap-2 p-1 border hairline rounded-xl bg-stone-50 max-w-xs text-xs font-mono">
+                  <button
+                    type="button"
+                    onClick={() => setSearchMode('web')}
+                    className={`flex-grow py-1.5 px-3 rounded-lg text-center font-semibold transition-all ${
+                      searchMode === 'web' ? 'bg-white shadow-soft text-moss-900' : 'text-ink/50 hover:text-ink'
+                    }`}
+                  >
+                    Buscar en la Web
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setSearchMode('text')}
+                    className={`flex-grow py-1.5 px-3 rounded-lg text-center font-semibold transition-all ${
+                      searchMode === 'text' ? 'bg-white shadow-soft text-moss-900' : 'text-ink/50 hover:text-ink'
+                    }`}
+                  >
+                    Pegar Texto
+                  </button>
+                </div>
+
+                {searchMode === 'web' ? (
+                  <div>
+                    <label className="block text-[11px] font-semibold uppercase tracking-wider text-ink/65 mb-1.5 font-mono">
+                      Nombre de la comunidad energética y ciudad *
+                    </label>
+                    <input
+                      type="text"
+                      value={searchQuery}
+                      onChange={(e) => setSearchQuery(e.target.value)}
+                      placeholder="ej. Babilônia Solar (Río de Janeiro, Brasil)"
+                      className="w-full px-4 py-2.5 rounded-xl border border-stone-200 focus:outline-none focus:border-moss-500 text-sm"
+                    />
+                  </div>
+                ) : (
+                  <div>
+                    <label className="block text-[11px] font-semibold uppercase tracking-wider text-ink/65 mb-1.5 font-mono">
+                      Contenido o reporte técnico *
+                    </label>
+                    <textarea
+                      value={pastedText}
+                      onChange={(e) => setPastedText(e.target.value)}
+                      rows={6}
+                      placeholder="Pega aquí toda la información, artículos o notas sobre la comunidad..."
+                      className="w-full px-4 py-2.5 rounded-xl border border-stone-200 focus:outline-none focus:border-moss-500 text-xs font-mono"
+                    />
+                  </div>
+                )}
+
+                <div className="flex gap-3 pt-2">
+                  <button
+                    type="button"
+                    disabled={aiLoading}
+                    onClick={handleAIExtract}
+                    className="px-5 py-2.5 bg-moss-900 hover:bg-ink text-ivory-50 text-xs font-bold uppercase tracking-wider rounded-full transition-all flex items-center gap-2 font-mono disabled:opacity-55"
+                  >
+                    {aiLoading ? (
+                      <>
+                        <span className="animate-spin inline-block w-3.5 h-3.5 border-2 border-ivory-50 border-t-transparent rounded-full" />
+                        Analizando...
+                      </>
+                    ) : (
+                      <>
+                        <ZapIcon className="h-3.5 w-3.5 text-copper-400" />
+                        Extraer con IA
+                      </>
+                    )}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setCurrentStep(1)}
+                    className="px-5 py-2.5 border border-stone-200 hover:border-ink text-ink text-xs font-bold uppercase tracking-wider rounded-full transition-all font-mono"
+                  >
+                    Omitir / Cargar Manualmente →
+                  </button>
+                </div>
+
+                {extractedSummary && (
+                  <div className="mt-6 bg-teal-50/50 border border-teal-200 rounded-xl p-5 font-sans animate-fade-in">
+                    <h5 className="text-xs font-semibold text-teal-900 uppercase tracking-wider mb-2 font-mono">Resumen de Extracción:</h5>
+                    <p className="text-xs text-teal-800 leading-relaxed whitespace-pre-line font-sans mb-4">{extractedSummary}</p>
+                    
+                    {extractedGrounding.length > 0 && (
+                      <div className="border-t border-teal-200/50 pt-3 mb-4">
+                        <span className="text-[9px] font-semibold text-teal-900/60 uppercase tracking-wider block mb-2 font-mono">
+                          Fuentes Grounding Consultadas (Google Search):
+                        </span>
+                        <ul className="space-y-1 text-[10px] font-mono text-teal-700">
+                          {extractedGrounding.map((src, i) => (
+                            <li key={i} className="flex items-baseline gap-2 truncate">
+                              <span className="text-teal-900/40 font-bold">[{i+1}]</span>
+                              <a href={src.uri} target="_blank" rel="noopener noreferrer" className="underline hover:text-teal-950 font-sans truncate">
+                                {src.title || src.uri}
+                              </a>
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    )}
+
+                    <button
+                      type="button"
+                      onClick={() => setCurrentStep(1)}
+                      className="w-full py-2.5 bg-teal-800 hover:bg-teal-900 text-white text-xs font-bold uppercase tracking-wider rounded-xl transition-all font-mono"
+                    >
+                      Revisar datos y Continuar al Formulario →
+                    </button>
+                  </div>
+                )}
+              </div>
+            )}
+
             {/* STEP 1: IDENTIFICATION */}
             {currentStep === 1 && (
               <div className="space-y-4">
@@ -879,7 +1260,7 @@ export const RegistrationWizard: React.FC<RegistrationWizardProps> = ({ userProf
 
             {/* Navigation Buttons */}
             <div className="flex justify-between border-t hairline pt-6 mt-8 font-mono text-xs">
-              {currentStep > 1 ? (
+              {currentStep > 0 ? (
                 <button
                   type="button"
                   onClick={handlePrev}
@@ -891,7 +1272,7 @@ export const RegistrationWizard: React.FC<RegistrationWizardProps> = ({ userProf
                 <div />
               )}
 
-              {currentStep < 5 ? (
+              {currentStep > 0 && currentStep < 5 ? (
                 <button
                   type="button"
                   onClick={handleNext}
@@ -899,13 +1280,21 @@ export const RegistrationWizard: React.FC<RegistrationWizardProps> = ({ userProf
                 >
                   Siguiente →
                 </button>
-              ) : (
+              ) : currentStep === 5 ? (
                 <button
                   type="submit"
                   disabled={submitting}
                   className="px-6 py-2.5 bg-emerald-700 hover:bg-emerald-800 text-white font-semibold rounded-full transition-all flex items-center gap-2"
                 >
                   {submitting ? 'Guardando...' : 'Enviar al Catastro ✔'}
+                </button>
+              ) : (
+                <button
+                  type="button"
+                  onClick={() => setCurrentStep(1)}
+                  className="px-5 py-2.5 bg-moss-900 hover:bg-ink text-ivory-50 font-semibold rounded-full transition-all"
+                >
+                  Cargar Manualmente →
                 </button>
               )}
             </div>
