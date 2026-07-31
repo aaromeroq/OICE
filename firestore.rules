@@ -17,15 +17,19 @@ service cloud.firestore {
       return isAuthenticated() && getUserData().role == 'admin';
     }
     
-    // Verificar si el usuario es un miembro aprobado
+    // Verificar si el usuario es un miembro aprobado (soporta 'member' e 'investigator')
     function isApprovedMember() {
-      return isAuthenticated() && getUserData().role == 'member' && getUserData().approved == true;
+      return isAuthenticated() && 
+        (getUserData().role == 'member' || getUserData().role == 'investigator') && 
+        getUserData().approved == true;
     }
 
     // Reglas para usuarios (perfiles)
     match /users/{userId} {
       allow read: if isAuthenticated();
-      allow create: if isAuthenticated() && request.resource.data.role == 'member' && request.resource.data.approved == false;
+      allow create: if isAuthenticated() && 
+        (request.resource.data.role == 'member' || request.resource.data.role == 'investigator') && 
+        request.resource.data.approved == false;
       allow update, delete: if isAdmin();
     }
 
@@ -34,11 +38,11 @@ service cloud.firestore {
       // Público general puede leer las aprobadas; miembros aprobados y admins leen todas.
       allow read: if resource.data.approved == true || isAdmin() || (isAuthenticated() && resource.data.createdByUser == request.auth.uid);
       
-      // Crear comunidad: Miembros aprobados pueden crear con estado "approved = false"
-      allow create: if isApprovedMember() && request.resource.data.approved == false && request.resource.data.createdByUser == request.auth.uid;
+      // Crear comunidad: Miembros aprobados y administradores pueden crear propuestas con estado "approved = false"
+      allow create: if (isApprovedMember() || isAdmin()) && request.resource.data.approved == false && request.resource.data.createdByUser == request.auth.uid;
       
       // Actualizar: El dueño puede editarla antes de ser aprobada, el admin puede editar todo
-      allow update: if isAdmin() || (isApprovedMember() && resource.data.createdByUser == request.auth.uid && resource.data.approved == false);
+      allow update: if isAdmin() || ((isApprovedMember() || isAdmin()) && resource.data.createdByUser == request.auth.uid && resource.data.approved == false);
       
       // Eliminar: Solo administradores
       allow delete: if isAdmin();
