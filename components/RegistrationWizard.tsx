@@ -26,10 +26,11 @@ export const RegistrationWizard: React.FC<RegistrationWizardProps> = ({ userProf
 
   // AI Assistant states (Step 0)
   const [selectedModel, setSelectedModel] = useState<string>('gemini-3.6-flash');
-  const [searchMode, setSearchMode] = useState<'web' | 'text'>('web');
+  const [searchMode, setSearchMode] = useState<'web' | 'text'>('text'); // Default is 'text'
   const [searchQuery, setSearchQuery] = useState('');
   const [pastedText, setPastedText] = useState('');
   const [aiLoading, setAiLoading] = useState(false);
+  const [copied, setCopied] = useState(false);
   const [extractedSummary, setExtractedSummary] = useState<string | null>(null);
   const [extractedGrounding, setExtractedGrounding] = useState<any[]>([]);
   const [geminiApiKey, setGeminiApiKey] = useState<string>(() => {
@@ -140,6 +141,20 @@ export const RegistrationWizard: React.FC<RegistrationWizardProps> = ({ userProf
     } else {
       setOstromPrinciples([...ostromPrinciples, principleNum]);
     }
+  };
+
+  const handleCopyPrompt = () => {
+    const promptText = `Busca en internet información detallada sobre la comunidad energética "${searchQuery.trim() || '[Escribe aquí el nombre de la comunidad y ubicación]'}" e identifica los datos clave de sus dimensiones bajo la taxonomía RIPCEL:
+1. Tecnología: tipo de generación (solar fotovoltaica, eólica, biomasa, micro-hidro, híbrido, etc.), capacidad en kW, almacenamiento en kWh, y nivel de digitalización o interoperabilidad.
+2. Gobernanza: forma jurídica (cooperativa, asociación, municipal, informal, étnica, etc.), cantidad de familias o miembros, mecanismo de toma de decisiones (ej. un miembro un voto), modelo de propiedad, liderazgo y rol de género.
+3. Regulación y Financiamiento: leyes aplicadas, incentivos tributarios o subsidios, y fuentes de financiamiento.
+4. Apropiación e Impacto Social: reducción de pobreza energética, empoderamiento de la comunidad y justicia social.
+
+Devuelve un reporte detallado en español con toda la información consolidada de forma descriptiva.`;
+
+    navigator.clipboard.writeText(promptText);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
   };
 
   const handleAIExtract = async (e: React.FormEvent) => {
@@ -638,52 +653,105 @@ Estructura JSON requerida obligatoriamente:
                 </div>
 
                 {/* Toggle search mode */}
-                <div className="flex gap-2 p-1 border hairline rounded-xl bg-stone-50 max-w-xs text-xs font-mono">
-                  <button
-                    type="button"
-                    onClick={() => setSearchMode('web')}
-                    className={`flex-grow py-1.5 px-3 rounded-lg text-center font-semibold transition-all ${
-                      searchMode === 'web' ? 'bg-white shadow-soft text-moss-900' : 'text-ink/50 hover:text-ink'
-                    }`}
-                  >
-                    Buscar en la Web
-                  </button>
+                <div className="flex gap-2 p-1 border hairline rounded-xl bg-stone-50 max-w-md text-xs font-mono mb-4">
                   <button
                     type="button"
                     onClick={() => setSearchMode('text')}
-                    className={`flex-grow py-1.5 px-3 rounded-lg text-center font-semibold transition-all ${
+                    className={`flex-grow py-2 px-3 rounded-lg text-center font-semibold transition-all flex flex-col items-center justify-center ${
                       searchMode === 'text' ? 'bg-white shadow-soft text-moss-900' : 'text-ink/50 hover:text-ink'
                     }`}
                   >
-                    Pegar Texto
+                    <span className="font-bold">Carga Asistida (Copiar y Pegar)</span>
+                    <span className="text-[9px] opacity-75 font-normal">Recomendado y 100% Gratis</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setSearchMode('web')}
+                    className={`flex-grow py-2 px-3 rounded-lg text-center font-semibold transition-all flex flex-col items-center justify-center ${
+                      searchMode === 'web' ? 'bg-white shadow-soft text-moss-900' : 'text-ink/50 hover:text-ink'
+                    }`}
+                  >
+                    <span className="font-bold">Búsqueda Directa con IA</span>
+                    <span className="text-[9px] opacity-75 font-normal">Requiere API Key de Pago</span>
                   </button>
                 </div>
 
-                {searchMode === 'web' ? (
-                  <div>
-                    <label className="block text-[11px] font-semibold uppercase tracking-wider text-ink/65 mb-1.5 font-mono">
-                      Nombre de la comunidad energética y ciudad *
-                    </label>
-                    <input
-                      type="text"
-                      value={searchQuery}
-                      onChange={(e) => setSearchQuery(e.target.value)}
-                      placeholder="ej. Babilônia Solar (Río de Janeiro, Brasil)"
-                      className="w-full px-4 py-2.5 rounded-xl border border-stone-200 focus:outline-none focus:border-moss-500 text-sm"
-                    />
+                {searchMode === 'text' ? (
+                  <div className="space-y-4">
+                    <div>
+                      <label className="block text-[11px] font-semibold uppercase tracking-wider text-ink/65 mb-1.5 font-mono">
+                        1. Nombre de la comunidad y ubicación
+                      </label>
+                      <input
+                        type="text"
+                        value={searchQuery}
+                        onChange={(e) => setSearchQuery(e.target.value)}
+                        placeholder="ej. Babilônia Solar (Río de Janeiro, Brasil)"
+                        className="w-full px-4 py-2.5 rounded-xl border border-stone-200 focus:outline-none focus:border-moss-500 text-sm"
+                      />
+                    </div>
+
+                    <div className="bg-stone-50 border border-stone-200 rounded-xl p-4">
+                      <div className="flex justify-between items-center mb-2">
+                        <label className="block text-[10px] font-semibold uppercase tracking-wider text-ink/65 font-mono">
+                          2. Prompt generado para tu IA (Gemini, ChatGPT, etc.)
+                        </label>
+                        <button
+                          type="button"
+                          onClick={handleCopyPrompt}
+                          className={`px-3 py-1 text-[10px] font-mono font-bold uppercase rounded-md transition-all ${
+                            copied 
+                              ? 'bg-emerald-100 text-emerald-800 border border-emerald-200' 
+                              : 'bg-moss-900 text-ivory-50 hover:bg-ink'
+                          }`}
+                        >
+                          {copied ? '✔ ¡Copiado!' : '📋 Copiar Prompt'}
+                        </button>
+                      </div>
+                      <div className="bg-white border border-stone-200 rounded-lg p-3 text-[11px] font-mono text-ink/75 max-h-36 overflow-y-auto leading-normal select-all">
+                        {`Busca en internet información detallada sobre la comunidad energética "${searchQuery.trim() || '[Escribe aquí el nombre de la comunidad y ubicación]'}" e identifica los datos clave de sus dimensiones bajo la taxonomía RIPCEL:
+1. Tecnología: tipo de generación (solar fotovoltaica, eólica, biomasa, micro-hidro, híbrido, etc.), capacidad en kW, almacenamiento en kWh, y nivel de digitalización o interoperabilidad.
+2. Gobernanza: forma jurídica (cooperativa, asociación, municipal, informal, étnica, etc.), cantidad de familias o miembros, mecanismo de toma de decisiones, modelo de propiedad, liderazgo y rol de género.
+3. Regulación y Financiamiento: leyes aplicadas, incentivos tributarios o subsidios, y fuentes de financiamiento.
+4. Apropiación e Impacto Social: reducción de pobreza energética, empoderamiento y justicia social.
+
+Devuelve un reporte detallado en español con toda la información consolidada de forma descriptiva.`}
+                      </div>
+                      <span className="block text-[9px] text-ink/45 mt-2 leading-normal font-mono">
+                        💡 Copia el prompt, pégalo en una IA externa con acceso a internet (como Gemini Web o ChatGPT) y copia el reporte que te devuelva.
+                      </span>
+                    </div>
+
+                    <div>
+                      <label className="block text-[11px] font-semibold uppercase tracking-wider text-ink/65 mb-1.5 font-mono">
+                        3. Pega aquí el reporte generado por la IA *
+                      </label>
+                      <textarea
+                        value={pastedText}
+                        onChange={(e) => setPastedText(e.target.value)}
+                        rows={6}
+                        placeholder="Pega el reporte extenso aquí..."
+                        className="w-full px-4 py-2.5 rounded-xl border border-stone-200 focus:outline-none focus:border-moss-500 text-xs font-mono"
+                      />
+                    </div>
                   </div>
                 ) : (
-                  <div>
-                    <label className="block text-[11px] font-semibold uppercase tracking-wider text-ink/65 mb-1.5 font-mono">
-                      Contenido o reporte técnico *
-                    </label>
-                    <textarea
-                      value={pastedText}
-                      onChange={(e) => setPastedText(e.target.value)}
-                      rows={6}
-                      placeholder="Pega aquí toda la información, artículos o notas sobre la comunidad..."
-                      className="w-full px-4 py-2.5 rounded-xl border border-stone-200 focus:outline-none focus:border-moss-500 text-xs font-mono"
-                    />
+                  <div className="space-y-4">
+                    <div className="p-3 bg-amber-50/50 border border-amber-200 text-amber-900 rounded-xl text-xs font-sans">
+                      ⚠️ <strong>Nota:</strong> Esta opción requiere que tu Gemini API Key de Google AI Studio tenga una tarjeta de crédito vinculada (facturación activa), ya que Google cobra $0.01 por consulta de búsqueda web.
+                    </div>
+                    <div>
+                      <label className="block text-[11px] font-semibold uppercase tracking-wider text-ink/65 mb-1.5 font-mono">
+                        Nombre de la comunidad energética y ciudad *
+                      </label>
+                      <input
+                        type="text"
+                        value={searchQuery}
+                        onChange={(e) => setSearchQuery(e.target.value)}
+                        placeholder="ej. Babilônia Solar (Río de Janeiro, Brasil)"
+                        className="w-full px-4 py-2.5 rounded-xl border border-stone-200 focus:outline-none focus:border-moss-500 text-sm"
+                      />
+                    </div>
                   </div>
                 )}
 
