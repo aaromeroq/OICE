@@ -7,7 +7,7 @@ import { ProjectDetailModal } from './components/ProjectDetailModal';
 import { AcademicRepository } from './components/AcademicRepository';
 import { ConversationalAI } from './components/ConversationalAI';
 import { communitiesData } from './data/communities';
-import { EnergyCommunity } from './types';
+import { EnergyCommunity, Region } from './types';
 import { LinksSection } from './components/LinksSection';
 import { LegislativeMonitor } from './components/LegislativeMonitor';
 import { RegistrationWizard } from './components/RegistrationWizard';
@@ -78,18 +78,65 @@ const App: React.FC = () => {
         const querySnapshot = await getDocs(q);
         const fbCommunities = querySnapshot.docs.map(doc => {
           const data = doc.data();
+          
+          let lng = 0;
+          let lat = 0;
+          if (data.location) {
+            lat = Number(data.location.lat) || 0;
+            lng = Number(data.location.lng) || 0;
+          }
+          
+          let region: Region = 'South America';
+          const countryName = data.country || '';
+          if (['España', 'Portugal'].includes(countryName)) {
+            region = 'Europe';
+          } else if (['México', 'Costa Rica', 'Honduras', 'Guatemala', 'El Salvador', 'Nicaragua', 'Panamá'].includes(countryName)) {
+            region = 'Central & North America';
+          } else if (['Cuba', 'República Dominicana', 'Puerto Rico'].includes(countryName)) {
+            region = 'Asia';
+          }
+          
           return {
             id: doc.id,
-            name: data.name,
-            description: data.description,
-            country: data.country,
-            location: data.location,
-            status: data.status,
-            dimensionTechnology: data.dimensionTechnology || null,
-            dimensionGovernance: data.dimensionGovernance || null,
-            dimensionRegulatoryFinancial: data.dimensionRegulatoryFinancial || null,
-            dimensionSocialAppropriation: data.dimensionSocialAppropriation || null,
-            dimensionDissemination: data.dimensionDissemination || null,
+            name: data.name || '',
+            region: region,
+            countries: [countryName],
+            summary: data.description || '',
+            mapCoordinates: [lng, lat],
+            status: data.status || 'activa',
+            dimensionTE: {
+              technology: data.dimensionTechnology?.techTypes?.join(', ') || 'Solar PV',
+              capacityMW: data.dimensionTechnology?.scaleKw ? (Number(data.dimensionTechnology.scaleKw) / 1000) : 0,
+              description: data.dimensionTechnology?.digitalization || data.description || '',
+              tisScore: [5, 4, 4, 3, 4, 4, 3]
+            },
+            dimensionGO: {
+              model: data.dimensionGovernance?.legalForm || 'Cooperativa',
+              membersCount: data.dimensionGovernance?.membersCount ? Number(data.dimensionGovernance.membersCount) : 0,
+              description: data.dimensionGovernance?.decisionMechanism || '',
+              ostromChecklist: [
+                data.dimensionGovernance?.ostromPrinciples?.dp1 || false,
+                data.dimensionGovernance?.ostromPrinciples?.dp2 || false,
+                data.dimensionGovernance?.ostromPrinciples?.dp3 || false,
+                data.dimensionGovernance?.ostromPrinciples?.dp4 || false,
+                data.dimensionGovernance?.ostromPrinciples?.dp5 || false,
+                data.dimensionGovernance?.ostromPrinciples?.dp6 || false,
+                data.dimensionGovernance?.ostromPrinciples?.dp7 || false,
+                data.dimensionGovernance?.ostromPrinciples?.dp8 || false,
+              ]
+            },
+            dimensionRF: {
+              legalStatus: data.dimensionRegulatoryFinancial?.legalFramework || 'Regulado',
+              financingMechanism: data.dimensionRegulatoryFinancial?.financingMechanism?.join(', ') || '',
+              description: data.dimensionRegulatoryFinancial?.incentives || '',
+              isRegulatoryDivideAffected: false,
+              regulatoryNotes: data.dimensionRegulatoryFinancial?.compensationRegime || ''
+            },
+            dimensionAS: {
+              localImpact: data.dimensionSocialAppropriation?.distributiveJustice || '',
+              description: data.dimensionSocialAppropriation?.empowermentOutcomes || '',
+              emancipationLevel: 4
+            }
           } as EnergyCommunity;
         });
 
