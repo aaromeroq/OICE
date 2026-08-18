@@ -247,7 +247,7 @@ const dimensions: DimensionConfig[] = [
       { fromX: 310, fromY: 200, toX: 150, toY: 200 }
     ],
     nodes: [
-      { id: 'center', label: 'Regulación y Finanzas', x: 480, y: 310, r: 68, isMain: true, definition: 'Analiza la viabilidad económica, los modelos de financiamiento y la adecuación legal del proyecto, evaluando las barreras regulatorias nacionales y la retribución económica.' },
+      { id: 'center', label: 'Regulación y Financiación', x: 480, y: 310, r: 68, isMain: true, definition: 'Analiza la viabilidad económica, los modelos de financiamiento y la adecuación legal del proyecto, evaluando las barreras regulatorias nacionales y la retribución económica.' },
       { id: 'branch-law', label: 'Marco Legal Habilitador', x: 270, y: 410, r: 48, isMain: true, definition: 'El conjunto de leyes generales y ordenanzas que reconocen formalmente a las comunidades energéticas en el territorio.' },
       { id: 'branch-fin', label: 'Mecanismos Financieros', x: 480, y: 490, r: 48, isMain: true, definition: 'Modelos de negocio y de fondeo aplicados para sufragar el capital inicial y mantener operativas las instalaciones.' },
       { id: 'branch-dso', label: 'Relación con el Distribuidor', x: 690, y: 410, r: 48, isMain: true, definition: 'Condiciones de conexión con el Operador de Red de Distribución (DSO), esquemas de retribución e inyección.' },
@@ -404,7 +404,7 @@ export const Glossary: React.FC = () => {
       if (node.label.includes('Gobernanza')) {
         lines = ['Gobernanza', 'Comunitaria'];
       } else if (node.label.includes('Regulación')) {
-        lines = ['Regulación y', 'Finanzas'];
+        lines = ['Regulación y', 'Financiación'];
       } else if (node.label.includes('Apropiación')) {
         lines = ['Apropiación', 'y Justicia'];
       } else {
