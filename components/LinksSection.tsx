@@ -96,6 +96,7 @@ export const LinksSection: React.FC<LinksSectionProps> = ({ communities = commun
   const { t } = useLanguage();
   const [activeSubTab, setActiveSubTab] = useState<'reports' | 'tools'>('reports');
   const [showMatrix, setShowMatrix] = useState(false);
+  const [showReportDetail, setShowReportDetail] = useState(false);
   const [selectedCell, setSelectedCell] = useState<{ tech: string; country: string } | null>(null);
 
   // Extract unique countries list dynamically from communities
@@ -148,6 +149,8 @@ export const LinksSection: React.FC<LinksSectionProps> = ({ communities = commun
             onClick={() => {
               setActiveSubTab('reports');
               setSelectedCell(null);
+              setShowMatrix(false);
+              setShowReportDetail(false);
             }}
             className={`py-3 px-6 text-sm font-semibold border-b-[3px] transition-all flex items-center gap-2 ${
               activeSubTab === 'reports'
@@ -163,6 +166,7 @@ export const LinksSection: React.FC<LinksSectionProps> = ({ communities = commun
               setActiveSubTab('tools');
               setSelectedCell(null);
               setShowMatrix(false);
+              setShowReportDetail(false);
             }}
             className={`py-3 px-6 text-sm font-semibold border-b-[3px] transition-all flex items-center gap-2 ${
               activeSubTab === 'tools'
@@ -178,29 +182,150 @@ export const LinksSection: React.FC<LinksSectionProps> = ({ communities = commun
         {/* Content switch */}
         {activeSubTab === 'reports' ? (
           <div className="space-y-6">
-            {!showMatrix ? (
-              // Main reports list with the requested "Matriz tecnologías y países" button
-              <div className="bg-white border border-stone-200 rounded-2xl p-6 shadow-soft max-w-md hover:border-teal-200 transition-all">
-                <div className="flex items-center gap-3 mb-4">
-                  <div className="h-10 w-10 rounded-xl bg-teal-50 flex items-center justify-center text-teal-700 font-bold text-lg">
-                    🔲
-                  </div>
+            {!showMatrix && !showReportDetail ? (
+              // Main reports list (Grid of Available Reports)
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                
+                {/* CARD 1: Matriz de Tecnologías y Países */}
+                <div className="bg-white border border-stone-200 rounded-2xl p-6 shadow-soft hover:border-teal-200 hover:shadow-editorial transition-all flex flex-col justify-between">
                   <div>
-                    <h3 className="font-bold text-stone-800 text-base">Matriz de Tecnologías y Países</h3>
-                    <span className="text-[10px] text-teal-700 bg-teal-50 border border-teal-100 font-semibold px-2 py-0.5 rounded uppercase tracking-wider">
-                      Taxonomía RIPCEL
+                    <div className="flex items-center gap-3 mb-4">
+                      <div className="h-10 w-10 rounded-xl bg-teal-50 flex items-center justify-center text-teal-700 font-bold text-lg">
+                        📊
+                      </div>
+                      <div>
+                        <h3 className="font-bold text-stone-800 text-base">Matriz de Tecnologías y Países</h3>
+                        <span className="text-[10px] text-teal-700 bg-teal-50 border border-teal-100 font-semibold px-2 py-0.5 rounded uppercase tracking-wider">
+                          Taxonomía RIPCEL
+                        </span>
+                      </div>
+                    </div>
+                    <p className="text-xs text-stone-500 leading-relaxed mb-6">
+                      Visualiza de forma interactiva qué tecnologías de la taxonomía del Observatorio están presentes en cada uno de los países iberoamericanos miembros de la red.
+                    </p>
+                  </div>
+                  <button
+                    onClick={() => setShowMatrix(true)}
+                    className="w-full py-2.5 px-4 bg-teal-700 hover:bg-teal-800 text-white font-semibold text-xs rounded-xl transition-all shadow-sm"
+                  >
+                    Consultar Matriz
+                  </button>
+                </div>
+
+                {/* CARD 2: Marco de Definición Unificada */}
+                <div className="bg-white border border-stone-200 rounded-2xl p-6 shadow-soft hover:border-teal-200 hover:shadow-editorial transition-all flex flex-col justify-between">
+                  <div>
+                    <div className="flex items-center gap-3 mb-4">
+                      <div className="h-10 w-10 rounded-xl bg-teal-50 flex items-center justify-center text-teal-700 font-bold text-lg">
+                        📄
+                      </div>
+                      <div>
+                        <h3 className="font-bold text-stone-800 text-base">Marco de Definición Unificada y Taxonomía</h3>
+                        <span className="text-[10px] text-teal-700 bg-teal-50 border border-teal-100 font-semibold px-2 py-0.5 rounded uppercase tracking-wider">
+                          Documento Técnico
+                        </span>
+                      </div>
+                    </div>
+                    <p className="text-xs text-stone-500 leading-relaxed mb-6">
+                      Explora el marco conceptual de Comunidades Energéticas Locales (CEL) adoptado por RIPCEL, sus definiciones oficiales y descarga el informe PDF.
+                    </p>
+                  </div>
+                  <button
+                    onClick={() => setShowReportDetail(true)}
+                    className="w-full py-2.5 px-4 bg-teal-700 hover:bg-teal-800 text-white font-semibold text-xs rounded-xl transition-all shadow-sm"
+                  >
+                    Ver Definiciones y Reporte
+                  </button>
+                </div>
+
+              </div>
+            ) : showReportDetail ? (
+              // The PDF download and definitions viewer
+              <div className="space-y-6 animate-fade-in max-w-4xl mx-auto">
+                {/* Back button */}
+                <div>
+                  <button
+                    onClick={() => setShowReportDetail(false)}
+                    className="text-xs font-bold text-teal-700 hover:text-teal-900 flex items-center gap-1.5 transition-colors"
+                  >
+                    ← Volver a Reportes
+                  </button>
+                </div>
+
+                {/* Main Content Card */}
+                <div className="bg-white border border-stone-200 shadow-editorial rounded-2xl p-6 sm:p-8">
+                  <div className="border-b pb-6 mb-6">
+                    <span className="text-[10px] bg-teal-50 border border-teal-100 text-teal-800 font-black px-2.5 py-1 rounded uppercase tracking-widest font-mono">
+                      RIPCEL / CYTED - Documento Técnico
                     </span>
+                    <h2 className="font-display text-xl sm:text-2xl font-black text-stone-900 mt-3 leading-tight">
+                      Marco de Definición Unificada y Taxonomía de Comunidades Energéticas Locales (CEL) en Iberoamérica
+                    </h2>
+                    <p className="text-xs text-stone-500 mt-2 font-mono">
+                      Publicado: Agosto de 2026 | Versión: v1.0 Definitiva
+                    </p>
+                  </div>
+
+                  {/* Definitions columns */}
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+                    
+                    {/* Short Definition */}
+                    <div className="bg-stone-50 border border-stone-200 rounded-xl p-5 hover:border-teal-300 transition-colors">
+                      <div className="flex items-center gap-2 mb-3">
+                        <span className="text-xs font-black uppercase tracking-wider text-teal-700 bg-teal-50 border border-teal-100 px-2 py-0.5 rounded">
+                          Versión Corta
+                        </span>
+                        <span className="text-[10px] text-stone-500 font-medium">
+                          Divulgación General
+                        </span>
+                      </div>
+                      <p className="text-xs text-stone-750 leading-relaxed font-sans">
+                        Una comunidad energética es una organización colectiva conformada por ciudadanos, instituciones locales, cooperativas o pequeñas empresas que se asocian de forma abierta y voluntaria para producir, gestionar, almacenar, consumir o compartir energía renovable. Su gobernanza es estrictamente democrática y participativa, y su fin primordial es generar beneficios sociales, ambientales y económicos localizados para el territorio y sus habitantes, subordinando la rentabilidad financiera a dichos objetivos colectivos.
+                      </p>
+                    </div>
+
+                    {/* Long Definition */}
+                    <div className="bg-stone-50 border border-stone-200 rounded-xl p-5 hover:border-teal-300 transition-colors">
+                      <div className="flex items-center gap-2 mb-3">
+                        <span className="text-xs font-black uppercase tracking-wider text-teal-700 bg-teal-50 border border-teal-100 px-2 py-0.5 rounded">
+                          Versión Larga
+                        </span>
+                        <span className="text-[10px] text-stone-500 font-medium">
+                          Ámbito Académico
+                        </span>
+                      </div>
+                      <p className="text-xs text-stone-750 leading-relaxed font-sans">
+                        Una Comunidad Energética Local (CEL) es una entidad jurídica de base socio-territorial y de participación abierta, voluntaria y democrática de ciudadanos, cooperativas, autoridades locales y pequeñas empresas. Su propósito fundamental es empoderar a sus miembros como prosumidores colectivos mediante la autogestión de recursos renovables y la interconectividad bidireccional de tecnologías distribuidas. Concebida como un nicho de innovación frente a los regímenes centralizados, la CEL prioriza la autonomía política y organizativa frente a los actores comerciales dominantes, operando bajo un esquema de gobernanza donde la toma de decisiones no depende del capital aportado y cuyos excedentes se reinvierten obligatoriamente en el fortalecimiento de la resiliencia comunitaria, la soberanía energética territorial y la erradicación de la pobreza de los hogares vulnerables.
+                      </p>
+                    </div>
+
+                  </div>
+
+                  {/* Download Section Banner */}
+                  <div className="bg-teal-900 text-white rounded-xl p-6 flex flex-col md:flex-row md:items-center justify-between gap-6 shadow-md">
+                    <div className="max-w-xl">
+                      <h4 className="font-display font-bold text-sm text-teal-200 uppercase tracking-widest mb-1 font-mono">
+                        Informe Técnico Definitivo (PDF)
+                      </h4>
+                      <h3 className="font-display font-bold text-lg text-white mb-2 leading-snug">
+                        Descarga el Reporte Consolidado Completo
+                      </h3>
+                      <p className="text-xs text-teal-100/80 leading-relaxed font-sans">
+                        El informe formal contiene el marco de transiciones socio-técnicas (MLP), el análisis ético ampliado con el pilar de **Justicia Restaurativa**, la clasificación bajo el enfoque TIS y la actualización regulatoria de Colombia (Resolución CREG 101 072 de 2025).
+                      </p>
+                    </div>
+                    <div className="flex-shrink-0">
+                      <a
+                        href="/Definicion_CEL_RIPCEL.pdf"
+                        download="Definicion_CEL_RIPCEL.pdf"
+                        className="inline-flex items-center gap-2 bg-copper-500 hover:bg-copper-600 text-white font-bold text-xs py-3 px-6 rounded-xl transition-all shadow-md transform hover:-translate-y-0.5 active:translate-y-0 font-sans"
+                      >
+                        <span>📥</span>
+                        Descargar PDF (412 KB)
+                      </a>
+                    </div>
                   </div>
                 </div>
-                <p className="text-xs text-stone-500 leading-relaxed mb-6">
-                  Visualiza de forma interactiva qué tecnologías de la taxonomía del Observatorio están presentes en cada uno de los países iberoamericanos miembros de la red.
-                </p>
-                <button
-                  onClick={() => setShowMatrix(true)}
-                  className="w-full py-2.5 px-4 bg-teal-700 hover:bg-teal-800 text-white font-semibold text-xs rounded-xl transition-all shadow-sm"
-                >
-                  Consultar Matriz
-                </button>
               </div>
             ) : (
               // The interactive technology vs country matrix
