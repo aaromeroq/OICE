@@ -1,0 +1,123 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1920 1080" width="100%" height="100%">
+  <defs>
+    <linearGradient id="bg-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0F252F" />
+      <stop offset="100%" stop-color="#1E475A" />
+    </linearGradient>
+    <linearGradient id="gold-grad" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#C1A86B" />
+      <stop offset="100%" stop-color="#E5D3A2" />
+    </linearGradient>
+    <linearGradient id="blue-glow" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#3C8EAF" stop-opacity="0.15" />
+      <stop offset="100%" stop-color="#3C8EAF" stop-opacity="0.0" />
+    </linearGradient>
+    <filter id="shadow" x="-5%" y="-5%" width="110%" height="110%">
+      <feDropShadow dx="0" dy="15" stdDeviation="15" flood-color="#000000" flood-opacity="0.3" />
+    </filter>
+  </defs>
+
+  <style>
+    .title { font-family: 'Georgia', serif; font-size: 54px; fill: #FFFFFF; font-weight: bold; }
+    .subtitle { font-family: 'system-ui', sans-serif; font-size: 24px; fill: #C1A86B; letter-spacing: 2px; font-weight: 600; text-transform: uppercase; }
+    .header-tag { font-family: 'system-ui', sans-serif; font-size: 14px; fill: #FFFFFF; opacity: 0.5; letter-spacing: 4px; text-transform: uppercase; }
+    .card-title { font-family: 'Georgia', serif; font-size: 28px; fill: #E5D3A2; font-weight: bold; }
+    .card-body { font-family: 'system-ui', sans-serif; font-size: 18px; fill: #E2ECEF; opacity: 0.85; line-height: 1.6; }
+    .card-label { font-family: 'system-ui', sans-serif; font-size: 15px; fill: #3C8EAF; font-weight: bold; letter-spacing: 1px; text-transform: uppercase; }
+    .footer-text { font-family: 'system-ui', sans-serif; font-size: 14px; fill: #FFFFFF; opacity: 0.4; font-mono; }
+  </style>
+
+  <!-- Background -->
+  <rect width="1920" height="1080" fill="url(#bg-grad)" />
+  <circle cx="1700" cy="150" r="300" fill="url(#blue-glow)" />
+  <circle cx="200" cy="900" r="450" fill="url(#blue-glow)" />
+  
+  <!-- Header Bar -->
+  <text x="100" y="80" class="header-tag">RIPCEL · Observatorio OICE · Catastro Científico</text>
+  <line x1="100" y1="100" x2="1820" y2="100" stroke="#FFFFFF" stroke-opacity="0.1" stroke-width="1" />
+
+  <!-- Main Slide Header -->
+  <text x="100" y="190" class="subtitle">Dimensión 02</text>
+  <text x="100" y="270" class="title">Dimensión de Gobernanza (GO)</text>
+  <rect x="100" y="300" width="120" height="6" fill="url(#gold-grad)" rx="3" />
+
+  <!-- Content Cards Grid -->
+  <!-- Card 1: Estructura Organizativa -->
+  <g transform="translate(100, 360)" filter="url(#shadow)">
+    <rect width="520" height="520" fill="#153342" rx="20" stroke="#3C8EAF" stroke-opacity="0.2" stroke-width="1.5" />
+    <rect width="520" height="520" fill="url(#blue-glow)" rx="20" />
+    
+    <!-- Icon Container -->
+    <rect x="40" y="40" width="70" height="70" rx="15" fill="#3C8EAF" fill-opacity="0.1" />
+    <!-- Users Icon -->
+    <circle cx="63" cy="72" r="8" fill="none" stroke="#3C8EAF" stroke-width="2.5" />
+    <path d="M48 90 a15 15 0 0 1 30 0" fill="none" stroke="#3C8EAF" stroke-width="2.5" />
+    <circle cx="87" cy="72" r="8" fill="none" stroke="#3C8EAF" stroke-width="2.5" />
+    <path d="M72 90 a15 15 0 0 1 30 0" fill="none" stroke="#3C8EAF" stroke-width="2.5" />
+    
+    <text x="40" y="160" class="card-label">Modelos y Participación</text>
+    <text x="40" y="210" class="card-title">Estructura &amp; Liderazgo</text>
+    <text x="40" y="260" class="card-body">
+      <tspan x="40" dy="0">Formas jurídicas y toma de decisiones:</tspan>
+      <tspan x="40" dy="35">• Tipos jurídicos: cooperativa, asociación vecinal,</tspan>
+      <tspan x="40" dy="25">  empresa municipal, informal o comunidad indígena.</tspan>
+      <tspan x="40" dy="35">• Participantes: conteo de familias/socios.</tspan>
+      <tspan x="40" dy="30">• Toma de decisiones: horizontal (un socio, un voto),</tspan>
+      <tspan x="40" dy="25">  consenso asambleario o comités jerárquicos.</tspan>
+      <tspan x="40" dy="35">• Equidad de género: rol de la mujer en la</tspan>
+      <tspan x="40" dy="25">  junta directiva y asambleas.</tspan>
+    </text>
+  </g>
+
+  <!-- Card 2: Modelo de Propiedad -->
+  <g transform="translate(660, 360)" filter="url(#shadow)">
+    <rect width="520" height="520" fill="#153342" rx="20" stroke="#3C8EAF" stroke-opacity="0.2" stroke-width="1.5" />
+    <rect width="520" height="520" fill="url(#blue-glow)" rx="20" />
+    
+    <!-- Icon Container -->
+    <rect x="40" y="40" width="70" height="70" rx="15" fill="#C1A86B" fill-opacity="0.1" />
+    <!-- Key/Ownership Icon -->
+    <circle cx="68" cy="68" r="10" fill="none" stroke="#C1A86B" stroke-width="3" />
+    <path d="M75 75 l18 18 M85 85 h8 v-8 M89 89 v8 h-8" stroke="#C1A86B" stroke-width="3" stroke-linecap="round" />
+    
+    <text x="40" y="160" class="card-label">Distribución de Activos</text>
+    <text x="40" y="210" class="card-title">Modelos de Propiedad</text>
+    <text x="40" y="260" class="card-body">
+      <tspan x="40" dy="0">Tenencia y control de activos físicos:</tspan>
+      <tspan x="40" dy="35">• Propiedad colectiva (los activos pertenecen a la</tspan>
+      <tspan x="40" dy="25">  cooperativa y no a personas individuales).</tspan>
+      <tspan x="40" dy="35">• Copropiedad / Fraccionada (cada miembro es dueño</tspan>
+      <tspan x="40" dy="25">  de un porcentaje de los paneles de forma individual).</tspan>
+      <tspan x="40" dy="35">• Alianza Público-Privada (los activos pertenecen al</tspan>
+      <tspan x="40" dy="25">  municipio y se cede el uso a los vecinos).</tspan>
+    </text>
+  </g>
+
+  <!-- Card 3: Principios de Elinor Ostrom -->
+  <g transform="translate(1220, 360)" filter="url(#shadow)">
+    <rect width="520" height="520" fill="#153342" rx="20" stroke="#3C8EAF" stroke-opacity="0.2" stroke-width="1.5" />
+    <rect width="520" height="520" fill="url(#blue-glow)" rx="20" />
+    
+    <!-- Icon Container -->
+    <rect x="40" y="40" width="70" height="70" rx="15" fill="#3C8EAF" fill-opacity="0.1" />
+    <!-- Ostrom Shield Icon -->
+    <path d="M75 52 L93 60 V80 C93 92 75 100 75 100 C75 100 57 92 57 80 V60 Z" fill="none" stroke="#3C8EAF" stroke-width="3" stroke-linejoin="round" />
+    
+    <text x="40" y="160" class="card-label">Bienes Comunes (CPR)</text>
+    <text x="40" y="210" class="card-title">Principios de Ostrom</text>
+    <text x="40" y="260" class="card-body">
+      <tspan x="40" dy="0">Gestión de recursos de uso común:</tspan>
+      <tspan x="40" dy="35">• Límites claros y reglas adaptadas al contexto local.</tspan>
+      <tspan x="40" dy="30">• Mecanismos democráticos de elección colectiva.</tspan>
+      <tspan x="40" dy="30">• Monitoreo y aplicación de sanciones graduales.</tspan>
+      <tspan x="40" dy="30">• Canales locales de resolución de conflictos.</tspan>
+      <tspan x="40" dy="30">• Reconocimiento de autonomía por entes externos.</tspan>
+      <tspan x="40" dy="30">• Redes organizativas anidadas en múltiples niveles.</tspan>
+    </text>
+  </g>
+
+  <!-- Footer -->
+  <line x1="100" y1="1000" x2="1820" y2="1000" stroke="#FFFFFF" stroke-opacity="0.1" stroke-width="1" />
+  <text x="100" y="1035" class="footer-text">© 2026 RIPCEL. Todos los derechos reservados.</text>
+  <text x="1820" y="1035" class="footer-text" text-anchor="end">Slide 2 de 4</text>
+</svg>

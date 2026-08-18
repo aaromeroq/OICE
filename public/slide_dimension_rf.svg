@@ -1,0 +1,125 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1920 1080" width="100%" height="100%">
+  <defs>
+    <linearGradient id="bg-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0F252F" />
+      <stop offset="100%" stop-color="#1E475A" />
+    </linearGradient>
+    <linearGradient id="gold-grad" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#C1A86B" />
+      <stop offset="100%" stop-color="#E5D3A2" />
+    </linearGradient>
+    <linearGradient id="blue-glow" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#3C8EAF" stop-opacity="0.15" />
+      <stop offset="100%" stop-color="#3C8EAF" stop-opacity="0.0" />
+    </linearGradient>
+    <filter id="shadow" x="-5%" y="-5%" width="110%" height="110%">
+      <feDropShadow dx="0" dy="15" stdDeviation="15" flood-color="#000000" flood-opacity="0.3" />
+    </filter>
+  </defs>
+
+  <style>
+    .title { font-family: 'Georgia', serif; font-size: 54px; fill: #FFFFFF; font-weight: bold; }
+    .subtitle { font-family: 'system-ui', sans-serif; font-size: 24px; fill: #C1A86B; letter-spacing: 2px; font-weight: 600; text-transform: uppercase; }
+    .header-tag { font-family: 'system-ui', sans-serif; font-size: 14px; fill: #FFFFFF; opacity: 0.5; letter-spacing: 4px; text-transform: uppercase; }
+    .card-title { font-family: 'Georgia', serif; font-size: 28px; fill: #E5D3A2; font-weight: bold; }
+    .card-body { font-family: 'system-ui', sans-serif; font-size: 18px; fill: #E2ECEF; opacity: 0.85; line-height: 1.6; }
+    .card-label { font-family: 'system-ui', sans-serif; font-size: 15px; fill: #3C8EAF; font-weight: bold; letter-spacing: 1px; text-transform: uppercase; }
+    .footer-text { font-family: 'system-ui', sans-serif; font-size: 14px; fill: #FFFFFF; opacity: 0.4; font-mono; }
+  </style>
+
+  <!-- Background -->
+  <rect width="1920" height="1080" fill="url(#bg-grad)" />
+  <circle cx="1700" cy="150" r="300" fill="url(#blue-glow)" />
+  <circle cx="200" cy="900" r="450" fill="url(#blue-glow)" />
+  
+  <!-- Header Bar -->
+  <text x="100" y="80" class="header-tag">RIPCEL · Observatorio OICE · Catastro Científico</text>
+  <line x1="100" y1="100" x2="1820" y2="100" stroke="#FFFFFF" stroke-opacity="0.1" stroke-width="1" />
+
+  <!-- Main Slide Header -->
+  <text x="100" y="190" class="subtitle">Dimensión 03</text>
+  <text x="100" y="270" class="title">Dimensión Regulatoria y Financiera (RF)</text>
+  <rect x="100" y="300" width="120" height="6" fill="url(#gold-grad)" rx="3" />
+
+  <!-- Content Cards Grid -->
+  <!-- Card 1: Marcos Legales -->
+  <g transform="translate(100, 360)" filter="url(#shadow)">
+    <rect width="520" height="520" fill="#153342" rx="20" stroke="#3C8EAF" stroke-opacity="0.2" stroke-width="1.5" />
+    <rect width="520" height="520" fill="url(#blue-glow)" rx="20" />
+    
+    <!-- Icon Container -->
+    <rect x="40" y="40" width="70" height="70" rx="15" fill="#3C8EAF" fill-opacity="0.1" />
+    <!-- Law Scales Icon -->
+    <line x1="75" y1="52" x2="75" y2="98" stroke="#3C8EAF" stroke-width="3" />
+    <line x1="58" y1="62" x2="92" y2="62" stroke="#3C8EAF" stroke-width="3" />
+    <path d="M52 80 a6 6 0 0 1 12 0" fill="none" stroke="#3C8EAF" stroke-width="2.5" />
+    <path d="M86 80 a6 6 0 0 1 12 0" fill="none" stroke="#3C8EAF" stroke-width="2.5" />
+    <line x1="58" y1="62" x2="58" y2="80" stroke="#3C8EAF" stroke-width="1.5" />
+    <line x1="92" y1="62" x2="92" y2="80" stroke="#3C8EAF" stroke-width="1.5" />
+    
+    <text x="40" y="160" class="card-label">Soporte Institucional</text>
+    <text x="40" y="210" class="card-title">Marcos Regulatorios</text>
+    <text x="40" y="260" class="card-body">
+      <tspan x="40" dy="0">Leyes y ordenanzas aplicables:</tspan>
+      <tspan x="40" dy="35">• Registro de normativas locales e internacionales</tspan>
+      <tspan x="40" dy="25">  (ej. Ley 1715 en Colombia, RD 244 en España).</tspan>
+      <tspan x="40" dy="35">• Tipos de comunidades permitidas por la regulación</tspan>
+      <tspan x="40" dy="25">  (Comunidades de Energías Renovables - CER).</tspan>
+      <tspan x="40" dy="35">• Barreras regulatorias: limitaciones para compartir</tspan>
+      <tspan x="40" dy="25">  energía a distancias mayores a las permitidas.</tspan>
+    </text>
+  </g>
+
+  <!-- Card 2: Regimen de Compensacion -->
+  <g transform="translate(660, 360)" filter="url(#shadow)">
+    <rect width="520" height="520" fill="#153342" rx="20" stroke="#3C8EAF" stroke-opacity="0.2" stroke-width="1.5" />
+    <rect width="520" height="520" fill="url(#blue-glow)" rx="20" />
+    
+    <!-- Icon Container -->
+    <rect x="40" y="40" width="70" height="70" rx="15" fill="#C1A86B" fill-opacity="0.1" />
+    <!-- Arrows Exchange Icon -->
+    <path d="M52 65 h30 M72 55 l10 10 l-10 10" fill="none" stroke="#C1A86B" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" />
+    <path d="M98 85 h-30 M78 75 l-10 10 l 10 10" fill="none" stroke="#C1A86B" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" />
+    
+    <text x="40" y="160" class="card-label">Modelos de Retribución</text>
+    <text x="40" y="210" class="card-title">Retribución de Excedentes</text>
+    <text x="40" y="260" class="card-body">
+      <tspan x="40" dy="0">Mecanismos de intercambio de energía:</tspan>
+      <tspan x="40" dy="35">• Net Metering (Compensación de energía 1:1,</tspan>
+      <tspan x="40" dy="25">  donde se descuenta la inyección del consumo).</tspan>
+      <tspan x="40" dy="35">• Net Billing (Venta de excedentes a una tarifa</tspan>
+      <tspan x="40" dy="25">  regulada inferior a la de compra).</tspan>
+      <tspan x="40" dy="35">• Compra y Venta P2P (Transacciones directas</tspan>
+      <tspan x="40" dy="25">  entre miembros sin intermediarios).</tspan>
+    </text>
+  </g>
+
+  <!-- Card 3: Modelos de Financiamiento -->
+  <g transform="translate(1220, 360)" filter="url(#shadow)">
+    <rect width="520" height="520" fill="#153342" rx="20" stroke="#3C8EAF" stroke-opacity="0.2" stroke-width="1.5" />
+    <rect width="520" height="520" fill="url(#blue-glow)" rx="20" />
+    
+    <!-- Icon Container -->
+    <rect x="40" y="40" width="70" height="70" rx="15" fill="#3C8EAF" fill-opacity="0.1" />
+    <!-- Coin Icon -->
+    <circle cx="75" cy="75" r="18" fill="none" stroke="#3C8EAF" stroke-width="3" />
+    <text x="75" y="81" font-family="'system-ui', sans-serif" font-size="20" fill="#3C8EAF" font-weight="bold" text-anchor="middle">$</text>
+    
+    <text x="40" y="160" class="card-label">Estructura Económica</text>
+    <text x="40" y="210" class="card-title">Mecanismos Financieros</text>
+    <text x="40" y="260" class="card-body">
+      <tspan x="40" dy="0">Modelos de negocio y fondeo:</tspan>
+      <tspan x="40" dy="35">• Fondos públicos y subsidios gubernamentales.</tspan>
+      <tspan x="40" dy="30">• Donaciones de cooperación internacional.</tspan>
+      <tspan x="40" dy="30">• Aportes de capital social de los miembros (coop).</tspan>
+      <tspan x="40" dy="30">• Crowdfunding / Micromecenazgo ciudadano.</tspan>
+      <tspan x="40" dy="30">• Préstamos bancarios comerciales o preferenciales.</tspan>
+      <tspan x="40" dy="30">• Exenciones fiscales y deducciones tributarias.</tspan>
+    </text>
+  </g>
+
+  <!-- Footer -->
+  <line x1="100" y1="1000" x2="1820" y2="1000" stroke="#FFFFFF" stroke-opacity="0.1" stroke-width="1" />
+  <text x="100" y="1035" class="footer-text">© 2026 RIPCEL. Todos los derechos reservados.</text>
+  <text x="1820" y="1035" class="footer-text" text-anchor="end">Slide 3 de 4</text>
+</svg>

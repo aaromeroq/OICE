@@ -1,0 +1,127 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1920 1080" width="100%" height="100%">
+  <defs>
+    <!-- Background Gradient -->
+    <linearGradient id="bg-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0F252F" />
+      <stop offset="100%" stop-color="#1E475A" />
+    </linearGradient>
+    <!-- Gold accent gradient -->
+    <linearGradient id="gold-grad" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#C1A86B" />
+      <stop offset="100%" stop-color="#E5D3A2" />
+    </linearGradient>
+    <!-- Blue glow gradient -->
+    <linearGradient id="blue-glow" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#3C8EAF" stop-opacity="0.15" />
+      <stop offset="100%" stop-color="#3C8EAF" stop-opacity="0.0" />
+    </linearGradient>
+    <!-- Drop Shadow -->
+    <filter id="shadow" x="-5%" y="-5%" width="110%" height="110%">
+      <feDropShadow dx="0" dy="15" stdDeviation="15" flood-color="#000000" flood-opacity="0.3" />
+    </filter>
+  </defs>
+
+  <style>
+    .title { font-family: 'Georgia', serif; font-size: 54px; fill: #FFFFFF; font-weight: bold; }
+    .subtitle { font-family: 'system-ui', sans-serif; font-size: 24px; fill: #C1A86B; letter-spacing: 2px; font-weight: 600; text-transform: uppercase; }
+    .header-tag { font-family: 'system-ui', sans-serif; font-size: 14px; fill: #FFFFFF; opacity: 0.5; letter-spacing: 4px; text-transform: uppercase; }
+    .card-title { font-family: 'Georgia', serif; font-size: 28px; fill: #E5D3A2; font-weight: bold; }
+    .card-body { font-family: 'system-ui', sans-serif; font-size: 18px; fill: #E2ECEF; opacity: 0.85; line-height: 1.6; }
+    .card-label { font-family: 'system-ui', sans-serif; font-size: 15px; fill: #3C8EAF; font-weight: bold; letter-spacing: 1px; text-transform: uppercase; }
+    .footer-text { font-family: 'system-ui', sans-serif; font-size: 14px; fill: #FFFFFF; opacity: 0.4; font-mono; }
+  </style>
+
+  <!-- Background -->
+  <rect width="1920" height="1080" fill="url(#bg-grad)" />
+  
+  <!-- Subtle decorative patterns -->
+  <circle cx="1700" cy="150" r="300" fill="url(#blue-glow)" />
+  <circle cx="200" cy="900" r="450" fill="url(#blue-glow)" />
+  
+  <!-- Header Bar -->
+  <text x="100" y="80" class="header-tag">RIPCEL · Observatorio OICE · Catastro Científico</text>
+  <line x1="100" y1="100" x2="1820" y2="100" stroke="#FFFFFF" stroke-opacity="0.1" stroke-width="1" />
+
+  <!-- Main Slide Header -->
+  <text x="100" y="190" class="subtitle">Dimensión 01</text>
+  <text x="100" y="270" class="title">Dimensión Tecnológica (TE)</text>
+  <rect x="100" y="300" width="120" height="6" fill="url(#gold-grad)" rx="3" />
+
+  <!-- Content Cards Grid -->
+  <!-- Card 1: Vector Energetico -->
+  <g transform="translate(100, 360)" filter="url(#shadow)">
+    <rect width="520" height="520" fill="#153342" rx="20" stroke="#3C8EAF" stroke-opacity="0.2" stroke-width="1.5" />
+    <rect width="520" height="520" fill="url(#blue-glow)" rx="20" />
+    
+    <!-- Icon Container -->
+    <rect x="40" y="40" width="70" height="70" rx="15" fill="#3C8EAF" fill-opacity="0.1" />
+    <!-- Sun/Energy Icon -->
+    <circle cx="75" cy="75" r="14" fill="none" stroke="#3C8EAF" stroke-width="3" />
+    <path d="M75 48 v8 M75 94 v8 M48 75 h8 M94 75 h8 M56 56 l6 6 M88 88 l6 6 M56 94 l6-6 M88 56 l6-6" stroke="#3C8EAF" stroke-width="3" stroke-linecap="round" />
+    
+    <text x="40" y="160" class="card-label">Vectores y Fuentes</text>
+    <text x="40" y="210" class="card-title">Tipos de Generación</text>
+    <text x="40" y="260" class="card-body">
+      <tspan x="40" dy="0">Clasificación de fuentes energéticas:</tspan>
+      <tspan x="40" dy="35">• Solar Fotovoltaica (Autoconsumo individual/colectivo)</tspan>
+      <tspan x="40" dy="30">• Eólica (Sistemas de micro-generación eólica)</tspan>
+      <tspan x="40" dy="30">• Hidroquinética (Paso de río y micro-turbinas)</tspan>
+      <tspan x="40" dy="30">• Biomasa / Biogás (Biodigestores y residuos)</tspan>
+      <tspan x="40" dy="30">• Sistemas Híbridos (Combinación multivectorial)</tspan>
+    </text>
+  </g>
+
+  <!-- Card 2: Capacidad e Infraestructura -->
+  <g transform="translate(660, 360)" filter="url(#shadow)">
+    <rect width="520" height="520" fill="#153342" rx="20" stroke="#3C8EAF" stroke-opacity="0.2" stroke-width="1.5" />
+    <rect width="520" height="520" fill="url(#blue-glow)" rx="20" />
+    
+    <!-- Icon Container -->
+    <rect x="40" y="40" width="70" height="70" rx="15" fill="#C1A86B" fill-opacity="0.1" />
+    <!-- Battery/Scale Icon -->
+    <rect x="55" y="55" width="40" height="40" rx="5" fill="none" stroke="#C1A86B" stroke-width="3" />
+    <line x1="65" y1="75" x2="85" y2="75" stroke="#C1A86B" stroke-width="3" />
+    <line x1="75" y1="65" x2="75" y2="85" stroke="#C1A86B" stroke-width="3" />
+    
+    <text x="40" y="160" class="card-label">Parámetros Críticos</text>
+    <text x="40" y="210" class="card-title">Escala e Infraestructura</text>
+    <text x="40" y="260" class="card-body">
+      <tspan x="40" dy="0">Capacidad técnica cuantitativa:</tspan>
+      <tspan x="40" dy="35">• Potencia total instalada medida en kW.</tspan>
+      <tspan x="40" dy="30">• Capacidad de almacenamiento en baterías (kWh),</tspan>
+      <tspan x="40" dy="25">  fundamental para estabilidad en sistemas aislados.</tspan>
+      <tspan x="40" dy="35">• Infraestructura de red local (microrredes de</tspan>
+      <tspan x="40" dy="25">  distribución en baja o media tensión).</tspan>
+    </text>
+  </g>
+
+  <!-- Card 3: Digitalización e Interoperabilidad -->
+  <g transform="translate(1220, 360)" filter="url(#shadow)">
+    <rect width="520" height="520" fill="#153342" rx="20" stroke="#3C8EAF" stroke-opacity="0.2" stroke-width="1.5" />
+    <rect width="520" height="520" fill="url(#blue-glow)" rx="20" />
+    
+    <!-- Icon Container -->
+    <rect x="40" y="40" width="70" height="70" rx="15" fill="#3C8EAF" fill-opacity="0.1" />
+    <!-- Smart Meter Icon -->
+    <rect x="58" y="50" width="34" height="50" rx="4" fill="none" stroke="#3C8EAF" stroke-width="3" />
+    <circle cx="75" cy="62" r="4" fill="#3C8EAF" />
+    <line x1="64" y1="75" x2="86" y2="75" stroke="#3C8EAF" stroke-width="2" />
+    
+    <text x="40" y="160" class="card-label">Tecnologías del Futuro</text>
+    <text x="40" y="210" class="card-title">Digitalización &amp; Red</text>
+    <text x="40" y="260" class="card-body">
+      <tspan x="40" dy="0">Sistemas inteligentes de gestión:</tspan>
+      <tspan x="40" dy="35">• Equipamiento digital: medidores bidireccionales</tspan>
+      <tspan x="40" dy="25">  inteligentes (AMI), sensores y IoT.</tspan>
+      <tspan x="40" dy="35">• Interoperabilidad técnica: protocolos de</tspan>
+      <tspan x="40" dy="25">  comunicación con la red de la distribuidora.</tspan>
+      <tspan x="40" dy="35">• Software de gestión: aplicaciones P2P, blockchain</tspan>
+      <tspan x="40" dy="25">  para transacciones y plataformas locales.</tspan>
+    </text>
+  </g>
+
+  <!-- Footer -->
+  <line x1="100" y1="1000" x2="1820" y2="1000" stroke="#FFFFFF" stroke-opacity="0.1" stroke-width="1" />
+  <text x="100" y="1035" class="footer-text">© 2026 RIPCEL. Todos los derechos reservados.</text>
+  <text x="1820" y="1035" class="footer-text" text-anchor="end">Slide 1 de 4</text>
+</svg>

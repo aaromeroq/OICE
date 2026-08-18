@@ -1,0 +1,122 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1920 1080" width="100%" height="100%">
+  <defs>
+    <linearGradient id="bg-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0F252F" />
+      <stop offset="100%" stop-color="#1E475A" />
+    </linearGradient>
+    <linearGradient id="gold-grad" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#C1A86B" />
+      <stop offset="100%" stop-color="#E5D3A2" />
+    </linearGradient>
+    <linearGradient id="blue-glow" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#3C8EAF" stop-opacity="0.15" />
+      <stop offset="100%" stop-color="#3C8EAF" stop-opacity="0.0" />
+    </linearGradient>
+    <filter id="shadow" x="-5%" y="-5%" width="110%" height="110%">
+      <feDropShadow dx="0" dy="15" stdDeviation="15" flood-color="#000000" flood-opacity="0.3" />
+    </filter>
+  </defs>
+
+  <style>
+    .title { font-family: 'Georgia', serif; font-size: 54px; fill: #FFFFFF; font-weight: bold; }
+    .subtitle { font-family: 'system-ui', sans-serif; font-size: 24px; fill: #C1A86B; letter-spacing: 2px; font-weight: 600; text-transform: uppercase; }
+    .header-tag { font-family: 'system-ui', sans-serif; font-size: 14px; fill: #FFFFFF; opacity: 0.5; letter-spacing: 4px; text-transform: uppercase; }
+    .card-title { font-family: 'Georgia', serif; font-size: 28px; fill: #E5D3A2; font-weight: bold; }
+    .card-body { font-family: 'system-ui', sans-serif; font-size: 18px; fill: #E2ECEF; opacity: 0.85; line-height: 1.6; }
+    .card-label { font-family: 'system-ui', sans-serif; font-size: 15px; fill: #3C8EAF; font-weight: bold; letter-spacing: 1px; text-transform: uppercase; }
+    .footer-text { font-family: 'system-ui', sans-serif; font-size: 14px; fill: #FFFFFF; opacity: 0.4; font-mono; }
+  </style>
+
+  <!-- Background -->
+  <rect width="1920" height="1080" fill="url(#bg-grad)" />
+  <circle cx="1700" cy="150" r="300" fill="url(#blue-glow)" />
+  <circle cx="200" cy="900" r="450" fill="url(#blue-glow)" />
+  
+  <!-- Header Bar -->
+  <text x="100" y="80" class="header-tag">RIPCEL · Observatorio OICE · Catastro Científico</text>
+  <line x1="100" y1="100" x2="1820" y2="100" stroke="#FFFFFF" stroke-opacity="0.1" stroke-width="1" />
+
+  <!-- Main Slide Header -->
+  <text x="100" y="190" class="subtitle">Dimensión 04</text>
+  <text x="100" y="270" class="title">Apropiación Social e Impacto (AS)</text>
+  <rect x="100" y="300" width="120" height="6" fill="url(#gold-grad)" rx="3" />
+
+  <!-- Content Cards Grid -->
+  <!-- Card 1: Justicia Energetica -->
+  <g transform="translate(100, 360)" filter="url(#shadow)">
+    <rect width="520" height="520" fill="#153342" rx="20" stroke="#3C8EAF" stroke-opacity="0.2" stroke-width="1.5" />
+    <rect width="520" height="520" fill="url(#blue-glow)" rx="20" />
+    
+    <!-- Icon Container -->
+    <rect x="40" y="40" width="70" height="70" rx="15" fill="#3C8EAF" fill-opacity="0.1" />
+    <!-- Heart Hand Icon -->
+    <path d="M75 88 C75 88 50 73 50 62 C50 54 56 48 64 48 C69 48 73 51 75 54 C77 51 81 48 86 48 C94 48 100 54 100 62 C100 73 75 88 75 88 Z" fill="none" stroke="#3C8EAF" stroke-width="3" stroke-linejoin="round" />
+    
+    <text x="40" y="160" class="card-label">Impacto y Equidad</text>
+    <text x="40" y="210" class="card-title">Justicia Energética</text>
+    <text x="40" y="260" class="card-body">
+      <tspan x="40" dy="0">Las 4 vertientes evaluadas:</tspan>
+      <tspan x="40" dy="35">• Justicia Distributiva: reparto de excedentes y ahorro</tspan>
+      <tspan x="40" dy="25">  tarifario para mitigar pobreza energética.</tspan>
+      <tspan x="40" dy="35">• Justicia Procedimental: asambleas de codiseño.</tspan>
+      <tspan x="40" dy="30">• Justicia de Reconocimiento: respeto de derechos</tspan>
+      <tspan x="40" dy="25">  e inclusión de sectores históricamente marginados.</tspan>
+      <tspan x="40" dy="35">• Justicia Restaurativa: remediación de injusticias</tspan>
+      <tspan x="40" dy="25">  asociadas al modelo fósil extractivo.</tspan>
+    </text>
+  </g>
+
+  <!-- Card 2: Empoderamiento e Innovacion -->
+  <g transform="translate(660, 360)" filter="url(#shadow)">
+    <rect width="520" height="520" fill="#153342" rx="20" stroke="#3C8EAF" stroke-opacity="0.2" stroke-width="1.5" />
+    <rect width="520" height="520" fill="url(#blue-glow)" rx="20" />
+    
+    <!-- Icon Container -->
+    <rect x="40" y="40" width="70" height="70" rx="15" fill="#C1A86B" fill-opacity="0.1" />
+    <!-- Seed/Growth Icon -->
+    <path d="M75 92 V58 M75 58 Q60 68 50 68 M75 66 Q90 56 100 56" fill="none" stroke="#C1A86B" stroke-width="3" stroke-linecap="round" />
+    <circle cx="75" cy="50" r="4" fill="#C1A86B" />
+    
+    <text x="40" y="160" class="card-label">Cambio Social</text>
+    <text x="40" y="210" class="card-title">Empoderamiento</text>
+    <text x="40" y="260" class="card-body">
+      <tspan x="40" dy="0">Nivel de soberanía y organización:</tspan>
+      <tspan x="40" dy="35">• Nivel de emancipación comunitaria según la escala</tspan>
+      <tspan x="40" dy="25">  RIPCEL (desde beneficiario pasivo a autogestión).</tspan>
+      <tspan x="40" dy="35">• Creación de capacidades técnicas (entrenamiento</tspan>
+      <tspan x="40" dy="25">  en mantenimiento, instalación y administración).</tspan>
+      <tspan x="40" dy="35">• Cohesión comunitaria: fortalecimiento del tejido</tspan>
+      <tspan x="40" dy="25">  social y colaboración entre vecinos.</tspan>
+    </text>
+  </g>
+
+  <!-- Card 3: Diseminacion Transversal -->
+  <g transform="translate(1220, 360)" filter="url(#shadow)">
+    <rect width="520" height="520" fill="#153342" rx="20" stroke="#3C8EAF" stroke-opacity="0.2" stroke-width="1.5" />
+    <rect width="520" height="520" fill="url(#blue-glow)" rx="20" />
+    
+    <!-- Icon Container -->
+    <rect x="40" y="40" width="70" height="70" rx="15" fill="#3C8EAF" fill-opacity="0.1" />
+    <!-- Book/Dissemination Icon -->
+    <path d="M52 50 h23 v45 h-23 Z" fill="none" stroke="#3C8EAF" stroke-width="3" />
+    <path d="M98 50 h-23 v45 h23 Z" fill="none" stroke="#3C8EAF" stroke-width="3" />
+    <path d="M48 95 h100" stroke="#3C8EAF" stroke-width="3" stroke-linecap="round" />
+    
+    <text x="40" y="160" class="card-label">Divulgación Científica</text>
+    <text x="40" y="210" class="card-title">Diseminación</text>
+    <text x="40" y="260" class="card-body">
+      <tspan x="40" dy="0">Prácticas de divulgación de saberes:</tspan>
+      <tspan x="40" dy="35">• Ciencia Abierta: publicación de datos de</tspan>
+      <tspan x="40" dy="25">  rendimiento y monitoreo energético en abierto.</tspan>
+      <tspan x="40" dy="35">• Canales de comunicación: boletines, asambleas</tspan>
+      <tspan x="40" dy="25">  públicas y redes sociales.</tspan>
+      <tspan x="40" dy="35">• Articulación territorial: relaciones con ONGs,</tspan>
+      <tspan x="40" dy="25">  universidades, municipios y centros educativos.</tspan>
+    </text>
+  </g>
+
+  <!-- Footer -->
+  <line x1="100" y1="1000" x2="1820" y2="1000" stroke="#FFFFFF" stroke-opacity="0.1" stroke-width="1" />
+  <text x="100" y="1035" class="footer-text">© 2026 RIPCEL. Todos los derechos reservados.</text>
+  <text x="1820" y="1035" class="footer-text" text-anchor="end">Slide 4 de 4</text>
+</svg>
