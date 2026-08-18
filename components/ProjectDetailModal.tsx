@@ -2,6 +2,65 @@ import React, { useEffect, useState } from 'react';
 import { EnergyCommunity } from '../types';
 import { useLanguage } from '../i18n';
 
+const techPills = [
+  {
+    term: 'Solar PV',
+    keywords: ['solar', 'fotovoltaica', 'pv', 'panel'],
+    definition: 'Paneles fotovoltaicos que convierten la luz solar directamente en electricidad.'
+  },
+  {
+    term: 'Wind',
+    keywords: ['eólica', 'eolica', 'wind', 'viento', 'aerogenerador'],
+    definition: 'Aerogeneradores de pequeña escala utilizados para la generación eléctrica local.'
+  },
+  {
+    term: 'Biomass',
+    keywords: ['biomasa', 'biogas', 'biogás', 'residuos', 'digestor'],
+    definition: 'Materiales orgánicos utilizados para la generación de calor o energía.'
+  },
+  {
+    term: 'Small Hydro',
+    keywords: ['hidro', 'hydro', 'agua', 'turbina', 'minihidráulica', 'paso de río'],
+    definition: 'Centrales minihidráulicas o microhidráulicas que aprovechan corrientes de agua.'
+  },
+  {
+    term: 'Batteries',
+    keywords: ['batería', 'bateria', 'baterias', 'battery', 'litio', 'plomo', 'iones de litio'],
+    definition: 'Dispositivos de almacenamiento electroquímico para flexibilidad a corto y mediano plazo.'
+  },
+  {
+    term: 'Microgrid',
+    keywords: ['microrred', 'microgrid', 'red local'],
+    definition: 'Una red local autocontrolada que puede funcionar aislada o conectada a la red principal.'
+  },
+  {
+    term: 'Blockchain',
+    keywords: ['blockchain', 'dlt', 'registro distribuido', 'p2p'],
+    definition: 'Tecnología de registro distribuido para comercio P2P de energía y contratos inteligentes.'
+  },
+  {
+    term: 'VPP / V2G',
+    keywords: ['vpp', 'v2g', 'planta virtual', 'vehículo', 'vehiculo', 'bidireccional'],
+    definition: 'Planta de energía virtual y carga/inyección bidireccional desde autos eléctricos.'
+  },
+  {
+    term: 'AI optimised',
+    keywords: ['inteligencia artificial', 'ia', 'ai', 'optimizado', 'predic'],
+    definition: 'Gestión energética con inteligencia artificial para optimización en tiempo real.'
+  },
+  {
+    term: 'EMS basic',
+    keywords: ['ems', 'gestión', 'gestion', 'monitoreo', 'scada', 'control'],
+    definition: 'Sistema de Gestión de Energía con funciones básicas de monitoreo de flujos.'
+  }
+];
+
+const hasTech = (techString: string | undefined, keywords: string[]): boolean => {
+  if (!techString) return false;
+  const lower = techString.toLowerCase();
+  return keywords.some(keyword => lower.includes(keyword));
+};
+
 interface ProjectDetailModalProps {
   project: EnergyCommunity | null;
   onClose: () => void;
@@ -112,11 +171,48 @@ export const ProjectDetailModal: React.FC<ProjectDetailModalProps> = ({ project,
         {/* Content */}
         <div className="p-6 sm:p-8 min-h-[220px] animate-fade-in">
           {activeTab === 'TE' && (
-            <div className="space-y-4">
-              <InfoCard label={t('modal.te.config')} value={project.dimensionTE.technology} />
-              {project.dimensionTE.capacityMW && (
-                <InfoCard label={t('modal.te.capacity')} value={`${project.dimensionTE.capacityMW} MW`} />
-              )}
+            <div className="space-y-5">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <InfoCard label={t('modal.te.config')} value={project.dimensionTE.technology} />
+                {project.dimensionTE.capacityMW && (
+                  <InfoCard label={t('modal.te.capacity')} value={`${project.dimensionTE.capacityMW} MW`} />
+                )}
+              </div>
+              
+              {/* Redesigned sub-technologies taxonomy list */}
+              <div className="bg-stone-50 p-5 rounded-xl border border-stone-200">
+                <h4 className="text-xs text-teal-700 uppercase tracking-widest font-bold mb-3">Sub-Tecnologías Detectadas</h4>
+                <p className="text-[11px] text-stone-500 mb-4 font-sans leading-normal">
+                  Identificación automatizada basada en la taxonomía oficial de OICE. Pasa el cursor sobre los elementos activos (resaltados) para ver su definición científica.
+                </p>
+                <div className="flex flex-wrap gap-2.5">
+                  {techPills.map(pill => {
+                    const active = hasTech(project.dimensionTE.technology, pill.keywords) || 
+                                   hasTech(project.dimensionTE.description, pill.keywords);
+                    return (
+                      <div
+                        key={pill.term}
+                        className={`relative group px-3.5 py-2 rounded-xl border text-[11px] font-semibold flex items-center gap-2 transition-all ${
+                          active
+                            ? 'bg-teal-50 border-teal-200 text-teal-700 font-bold scale-[1.01] shadow-sm'
+                            : 'bg-white/60 border-stone-200/60 text-stone-400 opacity-60'
+                        }`}
+                      >
+                        <span className={`w-1.5 h-1.5 rounded-full ${active ? 'bg-teal-500 animate-pulse' : 'bg-stone-300'}`}></span>
+                        <span>{pill.term}</span>
+                        
+                        {/* Custom responsive hover tooltip containing glossary definitions */}
+                        <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2.5 w-64 bg-stone-900 text-white text-[10px] p-3 rounded-lg shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-[9999] pointer-events-none font-sans font-normal leading-relaxed">
+                          <strong className="block text-amber-300 mb-1 font-mono uppercase tracking-wide text-[9px]">{pill.term}</strong>
+                          {pill.definition}
+                          <div className="absolute top-full left-1/2 transform -translate-x-1/2 border-4 border-transparent border-t-stone-900" />
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+
               <InfoCard label={t('modal.te.description')} value={project.dimensionTE.description} isLong />
             </div>
           )}

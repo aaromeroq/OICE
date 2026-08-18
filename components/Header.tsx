@@ -3,7 +3,7 @@ import { MapIcon, LibraryIcon, BookOpenIcon, BriefcaseIcon, LinkIcon, ChatIcon, 
 import { TransparentLogo } from './TransparentLogo';
 import { useLanguage } from '../i18n';
 
-export type Tab = 'home' | 'atlas' | 'legislation' | 'catastro' | 'repository' | 'ai' | 'links' | 'members' | 'news' | 'admin';
+export type Tab = 'home' | 'atlas' | 'legislation' | 'catastro' | 'repository' | 'ai' | 'links' | 'members' | 'news' | 'admin' | 'glossary';
 
 interface HeaderProps {
   activeTab: Tab;
@@ -39,6 +39,7 @@ export const Header: React.FC<HeaderProps> = ({ activeTab, setActiveTab, userPro
     { id: 'news', label: t('tabs.news'), icon: NewspaperIcon },
     { id: 'members', label: t('tabs.members'), icon: UsersIcon },
     { id: 'links', label: t('tabs.links'), icon: LinkIcon },
+    { id: 'glossary', label: t('tabs.glossary'), icon: BookOpenIcon },
   ];
 
   if (userProfile?.role === 'admin') {

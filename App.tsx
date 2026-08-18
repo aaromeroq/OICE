@@ -14,6 +14,7 @@ import { RegistrationWizard } from './components/RegistrationWizard';
 import { Members } from './components/Members';
 import { News } from './components/News';
 import { AdminDashboard } from './components/AdminDashboard';
+import { Glossary } from './components/Glossary';
 import { auth, db } from './firebase';
 import { onAuthStateChanged, signOut } from 'firebase/auth';
 import { doc, getDoc, collection, query, where, getDocs } from 'firebase/firestore';
@@ -222,6 +223,8 @@ const App: React.FC = () => {
         return <Members />;
       case 'news':
         return <News />;
+      case 'glossary':
+        return <Glossary />;
       case 'admin':
         return userProfile?.role === 'admin' ? <AdminDashboard /> : null;
       default:

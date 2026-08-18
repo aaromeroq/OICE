@@ -24,6 +24,7 @@ const es: TranslationDictionary = {
   'tabs.news': 'Noticias',
   'tabs.members': 'Red RIPCEL',
   'tabs.links': 'Reportes y Herramientas',
+  'tabs.glossary': 'Glosario',
 
   // ─── Home Hero ─────────────
   'home.badge': 'Red CYTED RIPCEL',
@@ -222,6 +223,7 @@ const en: TranslationDictionary = {
   'tabs.news': 'News',
   'tabs.members': 'RIPCEL Network',
   'tabs.links': 'Reports & Tools',
+  'tabs.glossary': 'Glossary',
 
   // ─── Home Hero ─────────────
   'home.badge': 'CYTED RIPCEL Network',
