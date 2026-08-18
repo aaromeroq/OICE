@@ -218,7 +218,7 @@ const App: React.FC = () => {
       case 'ai':
         return <ConversationalAI />;
       case 'links':
-        return <LinksSection />;
+        return <LinksSection communities={communities} />;
       case 'members':
         return <Members />;
       case 'news':
