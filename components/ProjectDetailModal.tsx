@@ -2,40 +2,43 @@ import React, { useEffect, useState } from 'react';
 import { EnergyCommunity } from '../types';
 import { useLanguage } from '../i18n';
 
+// ----------------------------------------------------
+// A. Dimensión Tecnológica (TE) Pills
+// ----------------------------------------------------
 const techPills = [
   {
-    term: 'Solar PV',
+    term: 'Solar FV',
     keywords: ['solar', 'fotovoltaica', 'pv', 'panel'],
     definition: 'Paneles fotovoltaicos que convierten la luz solar directamente en electricidad.'
   },
   {
-    term: 'Wind',
+    term: 'Eólica',
     keywords: ['eólica', 'eolica', 'wind', 'viento', 'aerogenerador'],
     definition: 'Aerogeneradores de pequeña escala utilizados para la generación eléctrica local.'
   },
   {
-    term: 'Biomass',
+    term: 'Biomasa',
     keywords: ['biomasa', 'biogas', 'biogás', 'residuos', 'digestor'],
     definition: 'Materiales orgánicos utilizados para la generación de calor o energía.'
   },
   {
-    term: 'Small Hydro',
+    term: 'Mini-hidráulica',
     keywords: ['hidro', 'hydro', 'agua', 'turbina', 'minihidráulica', 'paso de río'],
     definition: 'Centrales minihidráulicas o microhidráulicas que aprovechan corrientes de agua.'
   },
   {
-    term: 'Batteries',
+    term: 'Baterías',
     keywords: ['batería', 'bateria', 'baterias', 'battery', 'litio', 'plomo', 'iones de litio'],
     definition: 'Dispositivos de almacenamiento electroquímico para flexibilidad a corto y mediano plazo.'
   },
   {
-    term: 'Microgrid',
+    term: 'Microrred',
     keywords: ['microrred', 'microgrid', 'red local'],
     definition: 'Una red local autocontrolada que puede funcionar aislada o conectada a la red principal.'
   },
   {
     term: 'Blockchain',
-    keywords: ['blockchain', 'dlt', 'registro distribuido', 'p2p'],
+    keywords: ['blockchain', 'dlt', 'distribuido', 'p2p'],
     definition: 'Tecnología de registro distribuido para comercio P2P de energía y contratos inteligentes.'
   },
   {
@@ -44,14 +47,207 @@ const techPills = [
     definition: 'Planta de energía virtual y carga/inyección bidireccional desde autos eléctricos.'
   },
   {
-    term: 'AI optimised',
-    keywords: ['inteligencia artificial', 'ia', 'ai', 'optimizado', 'predic'],
+    term: 'SGE Inteligente',
+    keywords: ['inteligencia artificial', 'ia', 'ai', 'optimizado', 'predic', 'sge inteligente'],
     definition: 'Gestión energética con inteligencia artificial para optimización en tiempo real.'
   },
   {
-    term: 'EMS basic',
-    keywords: ['ems', 'gestión', 'gestion', 'monitoreo', 'scada', 'control'],
+    term: 'SGE Básico',
+    keywords: ['ems', 'gestión', 'gestion', 'monitoreo', 'scada', 'control', 'sge básico'],
     definition: 'Sistema de Gestión de Energía con funciones básicas de monitoreo de flujos.'
+  }
+];
+
+// ----------------------------------------------------
+// B. Dimensión de Gobernanza (GO) Pills
+// ----------------------------------------------------
+const govPills = [
+  {
+    term: 'Cooperativa',
+    keywords: ['cooperativa', 'coop'],
+    definition: 'Forma jurídica donde los miembros poseen y controlan democráticamente la comunidad.'
+  },
+  {
+    term: 'Asociación',
+    keywords: ['asociación', 'asociacion', 'asociado'],
+    definition: 'Entidad legal sin fines de lucro común para iniciativas comunitarias.'
+  },
+  {
+    term: 'Autogobierno Indígena',
+    keywords: ['indígena', 'indigena', 'etnia', 'cabildo', 'ancestral'],
+    definition: 'Estructuras de gobernanza basadas en autoridades tradicionales de pueblos originarios.'
+  },
+  {
+    term: 'Iniciativa Informal',
+    keywords: ['informal', 'de facto', 'sin registro'],
+    definition: 'Comunidades que operan de facto, sin personería jurídica formal, basadas en la confianza.'
+  },
+  {
+    term: 'Un Socio Un Voto',
+    keywords: ['un socio un voto', 'un miembro un voto', 'democrático', 'asamblea', '1p 1v'],
+    definition: 'Regla democrática donde cada miembro tiene el mismo peso electoral.'
+  },
+  {
+    term: 'Delegación Líquida',
+    keywords: ['líquida', 'liquida', 'delegación', 'delegar'],
+    definition: 'Sistema híbrido donde los miembros pueden votar directamente o delegar su voto.'
+  },
+  {
+    term: 'Equidad de Género',
+    keywords: ['género', 'genero', 'mujeres', 'equidad'],
+    definition: 'Medidas organizativas para asegurar una participación equilibrada de géneros.'
+  },
+  {
+    term: 'Inclusión Vulnerabilidad',
+    keywords: ['vulnerabilidad', 'pobreza', 'vulnerables'],
+    definition: 'Mecanismos específicos para integrar activamente a hogares con pobreza energética.'
+  },
+  {
+    term: 'Capacitación',
+    keywords: ['capacitación', 'capacitar', 'taller', 'entrenamiento', 'educación'],
+    definition: 'Educación continua de los miembros en habilidades técnicas y democráticas.'
+  },
+  {
+    term: 'Mediación',
+    keywords: ['mediación', 'mediacion', 'arbitraje', 'conciliación'],
+    definition: 'Mecanismos internos de resolución de conflictos antes de recurrir a la justicia estatal.'
+  }
+];
+
+// ----------------------------------------------------
+// C. Dimensión Regulatoria y Financiera (RF) Pills
+// ----------------------------------------------------
+const regPills = [
+  {
+    term: 'Marco Legal',
+    keywords: ['marco legal', 'ley', 'decreto', 'regulación', 'resolución', 'habilitado'],
+    definition: 'Marco legal regulatorio que reconoce explícitamente a las comunidades energéticas.'
+  },
+  {
+    term: 'Autoconsumo Col.',
+    keywords: ['autoconsumo colectivo', 'autogeneración colectiva', 'compartido'],
+    definition: 'Derecho a producir energía de forma conjunta e intercambiarla en cercanía.'
+  },
+  {
+    term: 'Venta Excedentes',
+    keywords: ['venta excedentes', 'comercialización', 'vender', 'comercializar'],
+    definition: 'Derecho legal de comercializar o vender excedentes a terceros o a la red.'
+  },
+  {
+    term: 'Crowdfunding',
+    keywords: ['crowdfunding', 'financiamiento colectivo', 'plataforma'],
+    definition: 'Financiamiento colectivo a través de aportes económicos mediante plataformas web.'
+  },
+  {
+    term: 'Bonos Verdes',
+    keywords: ['bonos verdes', 'bono verde', 'deuda'],
+    definition: 'Instrumentos de deuda cuyos fondos van exclusivamente a proyectos de energía renovable.'
+  },
+  {
+    term: 'Subsidios',
+    keywords: ['subsidio', 'subvención', 'fondos públicos', 'fae', 'fenoge', 'público'],
+    definition: 'Aportaciones y financiamiento público no reembolsable del Estado para inversión.'
+  },
+  {
+    term: 'Inversión Privada',
+    keywords: ['inversión privada', 'capital privado', 'impacto', 'inversor'],
+    definition: 'Fondos privados que buscan rentabilidad e impactos ambientales/sociales.'
+  },
+  {
+    term: 'Net Billing',
+    keywords: ['net billing', 'net metering', 'neteo', 'compensación'],
+    definition: 'Esquemas de compensación por inyección de excedentes energéticos a la red.'
+  },
+  {
+    term: 'Mercados Flex.',
+    keywords: ['flexibilidad', 'servicios de red', 'dso'],
+    definition: 'Participación en mercados para brindar servicios de soporte local a la red general.'
+  },
+  {
+    term: 'Resolución Conflictos',
+    keywords: ['resolución conflictos', 'disputas', 'arbitraje', 'conflictos'],
+    definition: 'Canales normativos para resolver desacuerdos con el distribuidor de red (DSO).'
+  }
+];
+
+// ----------------------------------------------------
+// D. Dimensión de Apropiación Social (AS) Pills
+// ----------------------------------------------------
+const socialPills = [
+  {
+    term: 'Pobreza Energ.',
+    keywords: ['pobreza energética', 'pobreza energetica', 'vulnerabilidad', 'tarifa social'],
+    definition: 'Situación en la cual un hogar no puede cubrir sus necesidades energéticas mínimas.'
+  },
+  {
+    term: 'Tarifas Sociales',
+    keywords: ['tarifa social', 'tarifas sociales', 'descuento', 'descuentos'],
+    definition: 'Tarifas rebajadas internamente para socios vulnerables subsidiadas de forma solidaria.'
+  },
+  {
+    term: 'Reparto Excedentes',
+    keywords: ['reparto', 'distribución excedentes', 'surplus'],
+    definition: 'Políticas para repartir ingresos de ventas de excedentes de forma equitativa.'
+  },
+  {
+    term: 'Co-diseño Tecnol.',
+    keywords: ['co-diseño', 'codiseño', 'diseño participativo', 'co-construction'],
+    definition: 'Diseño e instalación participativa de las instalaciones renovables.'
+  },
+  {
+    term: 'Voto Vinculante',
+    keywords: ['voto vinculante', 'participación sustantiva', 'regla interna'],
+    definition: 'Poder de la asamblea vecinal de formular y votar el reglamento interno de la comunidad.'
+  },
+  {
+    term: 'Derecho Veto',
+    keywords: ['veto', 'derecho de veto'],
+    definition: 'Poder de asambleas minoritarias o vulnerables para bloquear decisiones perjudiciales.'
+  },
+  {
+    term: 'Enfoque Étnico',
+    keywords: ['étnico', 'etnico', 'indígena', 'afro', 'étnica'],
+    definition: 'Respeto e integración de autoridades y costumbres de pueblos originarios.'
+  },
+  {
+    term: 'Derechos Territ.',
+    keywords: ['territorial', 'consulta previa', 'ancestral', 'territorio'],
+    definition: 'Respeto al derecho a la consulta previa y autodeterminación en tierras ancestrales.'
+  },
+  {
+    term: 'Lengua y Comunic.',
+    keywords: ['lengua', 'idioma', 'comunicación', 'lectura fácil', 'audiovisual'],
+    definition: 'Uso de las lenguas nativas locales y formatos accesibles en la comunicación.'
+  },
+  {
+    term: 'Reparación Histórica',
+    keywords: ['reparación', 'reparar', 'pasivo ambiental', 'remediation', 'histórico'],
+    definition: 'Medidas para subsanar daños y exclusión histórica generados por proyectos tradicionales.'
+  },
+  {
+    term: 'Reinversión Social',
+    keywords: ['reinversión', 'reinversion', 'fondo social', 'reinvest', 'revertir'],
+    definition: 'Destinar dividendos a fines comunitarios como salud, educación o infraestructuras.'
+  },
+  {
+    term: 'Alfabetización',
+    keywords: ['alfabetización', 'alfabetizacion', 'educación', 'literacy', 'aprender'],
+    definition: 'Educación popular energética para capacitar en facturación y consumos eficientes.'
+  },
+  {
+    term: 'Brecha Digital',
+    keywords: ['brecha digital', 'conectividad', 'internet', 'dispositivos'],
+    definition: 'Alfabetización digital y conectividad para evitar exclusión en la gestión inteligente.'
+  },
+  {
+    term: 'Apropiación Digna',
+    keywords: ['apropiación digna', 'reparar', 'tecnología propia', 'soberanía'],
+    definition: 'Autonomía e independencia para mantener y reparar los sistemas sin depender de monopolios.'
+  },
+  {
+    term: 'Empoderamiento',
+    keywords: ['empoderamiento', 'empowerment', 'agencia', 'autonomía', 'empoderar'],
+    definition: 'Soberanía colectiva para establecer prioridades y gobernar la transición energética.'
   }
 ];
 
@@ -116,6 +312,47 @@ export const ProjectDetailModal: React.FC<ProjectDetailModalProps> = ({ project,
     return t('modal.as.level1');
   };
 
+  // Reusable Pill Box renderer helper
+  const renderPillsBox = (
+    title: string,
+    pills: { term: string; keywords: string[]; definition: string }[],
+    sources: (string | undefined)[]
+  ) => {
+    return (
+      <div className="bg-stone-50 p-5 rounded-xl border border-stone-200">
+        <h4 className="text-xs text-teal-700 uppercase tracking-widest font-bold mb-3">{title}</h4>
+        <p className="text-[11px] text-stone-500 mb-4 font-sans leading-normal">
+          Identificación automatizada basada en la taxonomía oficial de OICE. Pasa el cursor sobre los elementos activos (resaltados) para ver su definición científica.
+        </p>
+        <div className="flex flex-wrap gap-2.5">
+          {pills.map(pill => {
+            const active = sources.some(src => hasTech(src, pill.keywords));
+            return (
+              <div
+                key={pill.term}
+                className={`relative group px-3.5 py-2 rounded-xl border text-[11px] font-semibold flex items-center gap-2 transition-all ${
+                  active
+                    ? 'bg-teal-50 border-teal-200 text-teal-700 font-bold scale-[1.01] shadow-sm'
+                    : 'bg-white/60 border-stone-200/60 text-stone-400 opacity-60'
+                }`}
+              >
+                <span className={`w-1.5 h-1.5 rounded-full ${active ? 'bg-teal-500 animate-pulse' : 'bg-stone-300'}`}></span>
+                <span>{pill.term}</span>
+                
+                {/* Responsive Hover Tooltip overlay */}
+                <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2.5 w-64 bg-stone-900 text-white text-[10px] p-3 rounded-lg shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-[9999] pointer-events-none font-sans font-normal leading-relaxed">
+                  <strong className="block text-amber-300 mb-1 font-mono uppercase tracking-wide text-[9px]">{pill.term}</strong>
+                  {pill.definition}
+                  <div className="absolute top-full left-1/2 transform -translate-x-1/2 border-4 border-transparent border-t-stone-900" />
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+    );
+  };
+
   return (
     <div
       className="fixed inset-0 bg-stone-900/50 backdrop-blur-sm flex justify-center items-center p-4 z-[1000]"
@@ -169,7 +406,7 @@ export const ProjectDetailModal: React.FC<ProjectDetailModalProps> = ({ project,
         </div>
 
         {/* Content */}
-        <div className="p-6 sm:p-8 min-h-[220px] animate-fade-in">
+        <div className="p-6 sm:p-8 min-h-[220px] animate-fade-in flex-grow">
           {activeTab === 'TE' && (
             <div className="space-y-5">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -180,38 +417,7 @@ export const ProjectDetailModal: React.FC<ProjectDetailModalProps> = ({ project,
               </div>
               
               {/* Redesigned sub-technologies taxonomy list */}
-              <div className="bg-stone-50 p-5 rounded-xl border border-stone-200">
-                <h4 className="text-xs text-teal-700 uppercase tracking-widest font-bold mb-3">Sub-Tecnologías Detectadas</h4>
-                <p className="text-[11px] text-stone-500 mb-4 font-sans leading-normal">
-                  Identificación automatizada basada en la taxonomía oficial de OICE. Pasa el cursor sobre los elementos activos (resaltados) para ver su definición científica.
-                </p>
-                <div className="flex flex-wrap gap-2.5">
-                  {techPills.map(pill => {
-                    const active = hasTech(project.dimensionTE.technology, pill.keywords) || 
-                                   hasTech(project.dimensionTE.description, pill.keywords);
-                    return (
-                      <div
-                        key={pill.term}
-                        className={`relative group px-3.5 py-2 rounded-xl border text-[11px] font-semibold flex items-center gap-2 transition-all ${
-                          active
-                            ? 'bg-teal-50 border-teal-200 text-teal-700 font-bold scale-[1.01] shadow-sm'
-                            : 'bg-white/60 border-stone-200/60 text-stone-400 opacity-60'
-                        }`}
-                      >
-                        <span className={`w-1.5 h-1.5 rounded-full ${active ? 'bg-teal-500 animate-pulse' : 'bg-stone-300'}`}></span>
-                        <span>{pill.term}</span>
-                        
-                        {/* Custom responsive hover tooltip containing glossary definitions */}
-                        <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2.5 w-64 bg-stone-900 text-white text-[10px] p-3 rounded-lg shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-[9999] pointer-events-none font-sans font-normal leading-relaxed">
-                          <strong className="block text-amber-300 mb-1 font-mono uppercase tracking-wide text-[9px]">{pill.term}</strong>
-                          {pill.definition}
-                          <div className="absolute top-full left-1/2 transform -translate-x-1/2 border-4 border-transparent border-t-stone-900" />
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-              </div>
+              {renderPillsBox('Sub-Tecnologías Detectadas', techPills, [project.dimensionTE.technology, project.dimensionTE.description])}
 
               <InfoCard label={t('modal.te.description')} value={project.dimensionTE.description} isLong />
             </div>
@@ -225,6 +431,9 @@ export const ProjectDetailModal: React.FC<ProjectDetailModalProps> = ({ project,
                   <InfoCard label={t('modal.go.members')} value={project.dimensionGO.membersCount.toLocaleString()} className="w-full sm:w-48" />
                 )}
               </div>
+
+              {/* Governance indicator pills list */}
+              {renderPillsBox('Indicadores de Gobernanza Detectados', govPills, [project.dimensionGO.model, project.dimensionGO.description])}
 
               {project.dimensionGO.ostromChecklist && (
                 <div className="bg-stone-50 p-5 rounded-xl border border-stone-200">
@@ -250,15 +459,25 @@ export const ProjectDetailModal: React.FC<ProjectDetailModalProps> = ({ project,
           )}
 
           {activeTab === 'RF' && (
-            <div className="space-y-4">
+            <div className="space-y-5">
               {project.dimensionRF.isRegulatoryDivideAffected && (
                 <div className="bg-amber-50 border border-amber-200 p-4 rounded-xl flex items-center gap-3">
                   <div className="h-3 w-3 rounded-full bg-amber-500 animate-pulse flex-shrink-0"></div>
                   <p className="text-sm text-amber-800 font-medium">{t('modal.rf.regulatoryDivide')}</p>
                 </div>
               )}
-              <InfoCard label={t('modal.rf.legalStatus')} value={project.dimensionRF.legalStatus} />
-              <InfoCard label={t('modal.rf.financing')} value={project.dimensionRF.financingMechanism} />
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <InfoCard label={t('modal.rf.legalStatus')} value={project.dimensionRF.legalStatus} />
+                <InfoCard label={t('modal.rf.financing')} value={project.dimensionRF.financingMechanism} />
+              </div>
+
+              {/* Regulatory & Financial indicator pills list */}
+              {renderPillsBox(
+                'Indicadores Regulatorios y Financieros Detectados', 
+                regPills, 
+                [project.dimensionRF.legalStatus, project.dimensionRF.financingMechanism, project.dimensionRF.description, project.dimensionRF.regulatoryNotes]
+              )}
+
               {project.dimensionRF.regulatoryNotes && (
                 <div className="bg-stone-50 p-5 rounded-xl border border-dashed border-stone-300">
                   <h4 className="text-xs text-stone-500 uppercase tracking-widest font-semibold mb-1">{t('modal.rf.notes')}</h4>
@@ -293,6 +512,10 @@ export const ProjectDetailModal: React.FC<ProjectDetailModalProps> = ({ project,
                   </span>
                 </div>
               </div>
+
+              {/* Social Appropriation & Justice indicator pills list */}
+              {renderPillsBox('Indicadores de Apropiación Social Detectados', socialPills, [project.dimensionAS.localImpact, project.dimensionAS.description])}
+
               <InfoCard label={t('modal.as.impact')} value={project.dimensionAS.localImpact} />
               <InfoCard label={t('modal.as.description')} value={project.dimensionAS.description} isLong />
             </div>
