@@ -18,13 +18,13 @@ const es: TranslationDictionary = {
   'tabs.home': 'Home',
   'tabs.atlas': 'Atlas Interactivo',
   'tabs.legislation': 'Monitor Legal',
-  'tabs.catastro': 'Catastro',
   'tabs.repository': 'Repositorio Académico',
   'tabs.ai': 'IA Conversacional',
   'tabs.news': 'Noticias',
   'tabs.members': 'Red RIPCEL',
   'tabs.links': 'Reportes y Herramientas',
   'tabs.glossary': 'Glosario',
+  'tabs.catastro': 'Carga de Comunidades',
 
   // ─── Home Hero ─────────────
   'home.badge': 'Red CYTED RIPCEL',
@@ -217,13 +217,13 @@ const en: TranslationDictionary = {
   'tabs.home': 'Home',
   'tabs.atlas': 'Interactive Atlas',
   'tabs.legislation': 'Legal Monitor',
-  'tabs.catastro': 'Registry',
   'tabs.repository': 'Academic Repository',
   'tabs.ai': 'Conversational AI',
   'tabs.news': 'News',
   'tabs.members': 'RIPCEL Network',
   'tabs.links': 'Reports & Tools',
   'tabs.glossary': 'Glossary',
+  'tabs.catastro': 'Upload Communities',
 
   // ─── Home Hero ─────────────
   'home.badge': 'CYTED RIPCEL Network',

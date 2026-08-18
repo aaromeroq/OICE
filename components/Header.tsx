@@ -33,13 +33,13 @@ export const Header: React.FC<HeaderProps> = ({ activeTab, setActiveTab, userPro
     { id: 'home', label: t('tabs.home'), icon: HomeIcon },
     { id: 'atlas', label: t('tabs.atlas'), icon: MapIcon },
     { id: 'legislation', label: t('tabs.legislation'), icon: BookOpenIcon },
-    { id: 'catastro', label: t('tabs.catastro'), icon: BriefcaseIcon },
     { id: 'repository', label: t('tabs.repository'), icon: LibraryIcon },
     { id: 'ai', label: t('tabs.ai'), icon: ChatIcon },
     { id: 'news', label: t('tabs.news'), icon: NewspaperIcon },
     { id: 'members', label: t('tabs.members'), icon: UsersIcon },
     { id: 'links', label: t('tabs.links'), icon: LinkIcon },
     { id: 'glossary', label: t('tabs.glossary'), icon: BookOpenIcon },
+    { id: 'catastro', label: t('tabs.catastro'), icon: BriefcaseIcon },
   ];
 
   if (userProfile?.role === 'admin') {
