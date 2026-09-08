@@ -65,6 +65,8 @@ const es: TranslationDictionary = {
   // ─── Legislative Monitor ───
   'legislation.title': 'Monitor Legislativo',
   'legislation.subtitle': 'Seguimiento de normativas, leyes y resoluciones sobre generación compartida y comunidades energéticas en Iberoamérica.',
+  'legislation.tab.laws': 'Normativas Vigentes',
+  'legislation.tab.questionnaire': 'Cuestionario Nacional (Eje 3)',
   'legislation.allCountries': 'Todos los países',
   'legislation.allTypes': 'Todos los tipos',
   'legislation.empty': 'No se encontraron normativas con los filtros seleccionados.',
@@ -265,6 +267,8 @@ const en: TranslationDictionary = {
   // ─── Legislative Monitor ───
   'legislation.title': 'Legislative Monitor',
   'legislation.subtitle': 'Tracking regulations, laws and resolutions on shared generation and energy communities in Ibero-America.',
+  'legislation.tab.laws': 'Current Legislation',
+  'legislation.tab.questionnaire': 'National Questionnaire (Axis 3)',
   'legislation.allCountries': 'All countries',
   'legislation.allTypes': 'All types',
   'legislation.empty': 'No regulations found for the selected filters.',
