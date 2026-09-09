@@ -47,5 +47,17 @@ service cloud.firestore {
       // Eliminar: Solo administradores
       allow delete: if isAdmin();
     }
+
+    // Reglas para el Cuestionario Nacional (Eje 3 RIPCEL)
+    match /eje3_questionnaires/{countryId} {
+      // Cualquier usuario autenticado puede leer los diagnósticos
+      allow read: if isAuthenticated();
+      
+      // Crear o actualizar: Miembros aprobados y administradores
+      allow create, update: if isApprovedMember() || isAdmin();
+      
+      // Eliminar: Solo administradores
+      allow delete: if isAdmin();
+    }
   }
 }

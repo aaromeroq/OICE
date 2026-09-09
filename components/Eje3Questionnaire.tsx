@@ -1,4 +1,6 @@
 import React, { useState, useEffect } from 'react';
+import { db } from '../firebase';
+import { doc, getDoc, setDoc, serverTimestamp } from 'firebase/firestore';
 import {
   QuestionnaireData,
   ScaleRating,
@@ -34,7 +36,6 @@ export const Eje3Questionnaire: React.FC<Eje3QuestionnaireProps> = ({ userProfil
 
   const [selectedCountry, setSelectedCountry] = useState<string>(initialCountry);
   const [data, setData] = useState<QuestionnaireData>(() => {
-    // Try to load from localStorage or default to benchmark
     const saved = localStorage.getItem(`ripcel_eje3_q_${initialCountry}`);
     if (saved) {
       try { return JSON.parse(saved); } catch (e) {}
@@ -47,33 +48,133 @@ export const Eje3Questionnaire: React.FC<Eje3QuestionnaireProps> = ({ userProfil
     }
     return initial;
   });
-  const [toastMessage, setToastMessage] = useState<string | null>(null);
 
-  // When country changes, load corresponding data
-  const handleCountryChange = (country: string) => {
-    setSelectedCountry(country);
-    const saved = localStorage.getItem(`ripcel_eje3_q_${country}`);
-    if (saved) {
-      try {
-        setData(JSON.parse(saved));
-        return;
-      } catch (e) {}
-    }
-    if (BENCHMARK_QUESTIONNAIRES[country]) {
-      setData(BENCHMARK_QUESTIONNAIRES[country]);
-    } else {
-      setData(createEmptyQuestionnaire(country));
-    }
+  const [toastMessage, setToastMessage] = useState<string | null>(null);
+  const [cloudLoading, setCloudLoading] = useState<boolean>(false);
+  const [cloudSaving, setCloudSaving] = useState<boolean>(false);
+  const [cloudStatus, setCloudStatus] = useState<'borrador' | 'enviado_a_revision' | 'validado_eje3' | 'no_sincronizado'>('no_sincronizado');
+  const [lastCloudSync, setLastCloudSync] = useState<{
+    name: string;
+    institution?: string;
+    position?: string;
+    date?: string;
+  } | null>(null);
+
+  const getCountryDocId = (countryName: string) => {
+    return countryName
+      .toLowerCase()
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "")
+      .replace(/\s+/g, "_");
   };
 
   const showToast = (msg: string) => {
     setToastMessage(msg);
-    setTimeout(() => setToastMessage(null), 3000);
+    setTimeout(() => setToastMessage(null), 3500);
   };
 
-  const handleSaveDraft = () => {
+  // Load data for selected country (Firestore -> LocalStorage -> Benchmark)
+  const fetchCountryData = async (country: string) => {
+    setCloudLoading(true);
+    try {
+      const docRef = doc(db, 'eje3_questionnaires', getCountryDocId(country));
+      const snapshot = await getDoc(docRef);
+      if (snapshot.exists()) {
+        const remoteData = snapshot.data();
+        const questionnairePayload = remoteData as unknown as QuestionnaireData;
+        setData(questionnairePayload);
+        setCloudStatus(remoteData.status || 'borrador');
+        setLastCloudSync({
+          name: remoteData.updatedByName || remoteData.responsible || 'Investigador',
+          institution: remoteData.institution || '',
+          position: remoteData.position || '',
+          date: remoteData.updateDate || ''
+        });
+        localStorage.setItem(`ripcel_eje3_q_${country}`, JSON.stringify(questionnairePayload));
+        setCloudLoading(false);
+        return;
+      }
+    } catch (err) {
+      console.warn("Could not fetch from Firestore, checking local storage:", err);
+    } finally {
+      setCloudLoading(false);
+    }
+
+    // Fallback if not in Firestore
+    const saved = localStorage.getItem(`ripcel_eje3_q_${country}`);
+    if (saved) {
+      try {
+        setData(JSON.parse(saved));
+        setCloudStatus('no_sincronizado');
+        setLastCloudSync(null);
+        return;
+      } catch (e) {}
+    }
+
+    if (BENCHMARK_QUESTIONNAIRES[country]) {
+      setData(BENCHMARK_QUESTIONNAIRES[country]);
+    } else {
+      const empty = createEmptyQuestionnaire(country);
+      if (userProfile) {
+        const pos = userProfile.position ? `${userProfile.position} - ` : '';
+        const inst = userProfile.institution ? `${userProfile.institution}` : 'RIPCEL';
+        empty.responsible = `${userProfile.name} (${pos}${inst})`;
+      }
+      setData(empty);
+    }
+    setCloudStatus('no_sincronizado');
+    setLastCloudSync(null);
+  };
+
+  useEffect(() => {
+    fetchCountryData(selectedCountry);
+  }, [selectedCountry]);
+
+  // When country selector changes
+  const handleCountryChange = (country: string) => {
+    setSelectedCountry(country);
+  };
+
+  const handleSaveToFirestore = async (status: 'borrador' | 'enviado_a_revision' = 'borrador') => {
+    setCloudSaving(true);
+    try {
+      localStorage.setItem(`ripcel_eje3_q_${selectedCountry}`, JSON.stringify(data));
+      const docRef = doc(db, 'eje3_questionnaires', getCountryDocId(selectedCountry));
+      const payload = {
+        ...data,
+        country: selectedCountry,
+        status: status,
+        updatedByUid: userProfile?.uid || null,
+        updatedByName: userProfile?.name || data.responsible || 'Investigador',
+        updatedByEmail: userProfile?.email || null,
+        institution: userProfile?.institution || null,
+        position: userProfile?.position || null,
+        lastUpdatedClient: new Date().toISOString(),
+        serverUpdatedAt: serverTimestamp()
+      };
+      await setDoc(docRef, payload, { merge: true });
+      setCloudStatus(status);
+      setLastCloudSync({
+        name: userProfile?.name || 'Tú',
+        institution: userProfile?.institution || '',
+        position: userProfile?.position || '',
+        date: data.updateDate
+      });
+      showToast(status === 'enviado_a_revision'
+        ? `¡Cuestionario de ${selectedCountry} guardado en Firestore y enviado a revisión del Eje 3!`
+        : `¡Cuestionario de ${selectedCountry} sincronizado exitosamente en Firestore!`
+      );
+    } catch (err: any) {
+      console.error("Error saving to Firestore:", err);
+      showToast(`Error al guardar en Firestore: ${err.message || 'Error de conexión'}`);
+    } finally {
+      setCloudSaving(false);
+    }
+  };
+
+  const handleSaveLocalDraft = () => {
     localStorage.setItem(`ripcel_eje3_q_${selectedCountry}`, JSON.stringify(data));
-    showToast(`Borrador de ${selectedCountry} guardado correctamente`);
+    showToast(`Borrador local de ${selectedCountry} guardado en tu navegador`);
   };
 
   const handleLoadBenchmark = (countryKey: string) => {
@@ -232,34 +333,92 @@ export const Eje3Questionnaire: React.FC<Eje3QuestionnaireProps> = ({ userProfil
             )}
             <button
               type="button"
-              onClick={handleSaveDraft}
-              className="px-3.5 py-2 text-[11px] font-bold bg-teal-700 hover:bg-teal-800 text-white rounded-xl shadow-sm transition-all flex items-center gap-1.5"
+              disabled={cloudSaving}
+              onClick={() => handleSaveToFirestore('borrador')}
+              className="px-3.5 py-2 text-[11px] font-bold bg-teal-700 hover:bg-teal-800 text-white rounded-xl shadow-sm transition-all flex items-center gap-1.5 disabled:opacity-50"
+              title="Guardar cuestionario en la base de datos en la nube de Firestore"
             >
-              💾 Guardar Borrador
+              {cloudSaving ? '☁️ Guardando...' : '☁️ Guardar en Firestore'}
+            </button>
+            <button
+              type="button"
+              disabled={cloudSaving}
+              onClick={() => handleSaveToFirestore('enviado_a_revision')}
+              className="px-3 py-2 text-[11px] font-bold bg-emerald-700 hover:bg-emerald-800 text-white rounded-xl shadow-sm transition-all flex items-center gap-1.5 disabled:opacity-50"
+              title="Enviar cuestionario terminado a revisión y validación de la coordinación del Eje 3"
+            >
+              🚀 Enviar a Revisión Eje 3
+            </button>
+            <button
+              type="button"
+              onClick={handleSaveLocalDraft}
+              className="px-2.5 py-2 text-[11px] font-medium bg-stone-100 hover:bg-stone-200 text-stone-700 rounded-xl transition-colors"
+              title="Guardar copia local sin conexión en este navegador"
+            >
+              💾 Local
             </button>
             <button
               type="button"
               onClick={handleExportJSON}
-              className="px-3 py-2 text-[11px] font-semibold bg-stone-100 hover:bg-stone-200 text-stone-800 rounded-xl transition-colors"
+              className="px-2.5 py-2 text-[11px] font-medium bg-stone-100 hover:bg-stone-200 text-stone-700 rounded-xl transition-colors"
+              title="Exportar archivo JSON"
             >
-              📥 Exportar JSON
+              📥 JSON
             </button>
             <button
               type="button"
               onClick={handlePrint}
-              className="px-3 py-2 text-[11px] font-semibold bg-stone-100 hover:bg-stone-200 text-stone-800 rounded-xl transition-colors"
+              className="px-2.5 py-2 text-[11px] font-medium bg-stone-100 hover:bg-stone-200 text-stone-700 rounded-xl transition-colors"
             >
-              🖨️ Imprimir
+              🖨️
             </button>
             <button
               type="button"
               onClick={handleReset}
-              className="px-2.5 py-2 text-[11px] text-stone-400 hover:text-rose-600 transition-colors"
+              className="px-2 py-2 text-[11px] text-stone-400 hover:text-rose-600 transition-colors"
               title="Restablecer campos"
             >
               🔄
             </button>
           </div>
+        </div>
+
+        {/* Cloud Status Sub-Bar */}
+        <div className="mt-4 pt-3 border-t border-stone-150 flex flex-wrap items-center justify-between gap-2 text-xs">
+          <div className="flex items-center gap-2">
+            {cloudLoading ? (
+              <span className="inline-flex items-center gap-1.5 text-stone-500 font-mono text-[11px]">
+                <span className="w-2 h-2 rounded-full bg-teal-500 animate-ping"></span>
+                Consultando Firestore...
+              </span>
+            ) : cloudStatus === 'validado_eje3' ? (
+              <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-emerald-50 text-emerald-800 border border-emerald-300 font-mono text-[10px] font-bold">
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-600"></span>
+                Validado Oficialmente por Eje 3
+              </span>
+            ) : cloudStatus === 'enviado_a_revision' ? (
+              <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-blue-50 text-blue-800 border border-blue-300 font-mono text-[10px] font-bold">
+                <span className="w-1.5 h-1.5 rounded-full bg-blue-600 animate-pulse"></span>
+                Enviado para Revisión del Eje 3 en Firestore
+              </span>
+            ) : cloudStatus === 'borrador' ? (
+              <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-teal-50 text-teal-800 border border-teal-300 font-mono text-[10px] font-bold">
+                <span className="w-1.5 h-1.5 rounded-full bg-teal-600"></span>
+                Sincronizado en la Nube (Firestore)
+              </span>
+            ) : (
+              <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-stone-100 text-stone-600 border border-stone-300 font-mono text-[10px]">
+                <span className="w-1.5 h-1.5 rounded-full bg-stone-400"></span>
+                Almacenado localmente (sin sincronizar en Firestore)
+              </span>
+            )}
+          </div>
+
+          {lastCloudSync && (
+            <div className="text-[11px] text-stone-500 font-mono">
+              Última edición en Firestore: <strong className="text-stone-700">{lastCloudSync.name}</strong> {lastCloudSync.institution ? `(${lastCloudSync.institution})` : ''} · {lastCloudSync.date}
+            </div>
+          )}
         </div>
       </div>
 
@@ -1059,13 +1218,22 @@ export const Eje3Questionnaire: React.FC<Eje3QuestionnaireProps> = ({ userProfil
           <div className="text-[11px] text-stone-500 font-mono">
             Última edición: {data.updateDate} | Responsable: {data.responsible || 'No especificado'}
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex flex-wrap items-center gap-2">
             <button
               type="button"
-              onClick={handleSaveDraft}
-              className="px-4 py-2 text-xs font-bold bg-teal-700 hover:bg-teal-800 text-white rounded-xl shadow transition-all flex items-center gap-1.5"
+              disabled={cloudSaving}
+              onClick={() => handleSaveToFirestore('borrador')}
+              className="px-4 py-2 text-xs font-bold bg-teal-700 hover:bg-teal-800 text-white rounded-xl shadow transition-all flex items-center gap-1.5 disabled:opacity-50"
             >
-              💾 Guardar Respuestas de {data.country}
+              {cloudSaving ? '☁️ Guardando...' : `☁️ Guardar en Firestore (${data.country})`}
+            </button>
+            <button
+              type="button"
+              disabled={cloudSaving}
+              onClick={() => handleSaveToFirestore('enviado_a_revision')}
+              className="px-4 py-2 text-xs font-bold bg-emerald-700 hover:bg-emerald-800 text-white rounded-xl shadow transition-all flex items-center gap-1.5 disabled:opacity-50"
+            >
+              🚀 Enviar a Revisión Eje 3
             </button>
             <button
               type="button"
