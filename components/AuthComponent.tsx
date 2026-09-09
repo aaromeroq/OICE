@@ -22,6 +22,7 @@ export const AuthComponent: React.FC<AuthComponentProps> = ({ onAuthSuccess }) =
   const [confirmPassword, setConfirmPassword] = useState('');
   const [name, setName] = useState('');
   const [institution, setInstitution] = useState('');
+  const [position, setPosition] = useState('');
   const [country, setCountry] = useState(iberoamericanCountries[0].name);
   
   const [error, setError] = useState<string | null>(null);
@@ -44,8 +45,8 @@ export const AuthComponent: React.FC<AuthComponentProps> = ({ onAuthSuccess }) =
         if (password !== confirmPassword) {
           throw new Error('Las contraseñas no coinciden');
         }
-        if (!name.trim() || !institution.trim()) {
-          throw new Error('Por favor, completa todos los campos');
+        if (!name.trim() || !institution.trim() || !position.trim()) {
+          throw new Error('Por favor, indica tu nombre completo, institución y cargo');
         }
 
         // Sign Up
@@ -58,19 +59,22 @@ export const AuthComponent: React.FC<AuthComponentProps> = ({ onAuthSuccess }) =
           name: name.trim(),
           email: email.trim(),
           institution: institution.trim(),
+          position: position.trim(),
+          cargo: position.trim(),
           country: country,
           role: 'member',
           approved: false, // Needs admin approval
           createdAt: serverTimestamp()
         });
 
-        setSuccessMessage('Cuenta creada con éxito. Un administrador científico de RIPCEL revisará y aprobará tu perfil antes de que puedas publicar proyectos.');
+        setSuccessMessage('Cuenta creada con éxito. Un administrador científico de RIPCEL revisará y aprobará tu perfil antes de que puedas publicar proyectos y consignar diagnósticos.');
         // Clear fields
         setEmail('');
         setPassword('');
         setConfirmPassword('');
         setName('');
         setInstitution('');
+        setPosition('');
         setIsLogin(true); // Switch to login tab
       }
     } catch (err: any) {
@@ -163,7 +167,19 @@ export const AuthComponent: React.FC<AuthComponentProps> = ({ onAuthSuccess }) =
                 onChange={(e) => setInstitution(e.target.value)}
                 required
                 className="w-full px-4 py-2.5 rounded-xl border border-stone-200 focus:outline-none focus:border-moss-500 text-sm"
-                placeholder="ej. Universidad Nacional de San Juan"
+                placeholder="ej. Universidad Nacional de San Juan / CONICET"
+              />
+            </div>
+
+            <div>
+              <label className="block text-[11px] font-semibold uppercase tracking-wider text-ink/65 mb-1.5 font-mono">Cargo / Rol en la Institución</label>
+              <input
+                type="text"
+                value={position}
+                onChange={(e) => setPosition(e.target.value)}
+                required
+                className="w-full px-4 py-2.5 rounded-xl border border-stone-200 focus:outline-none focus:border-moss-500 text-sm"
+                placeholder="ej. Investigador Principal, Profesor Titular, Director de Proyecto"
               />
             </div>
 

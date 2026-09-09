@@ -14,15 +14,38 @@ import {
   BENCHMARK_QUESTIONNAIRES
 } from '../data/questionnaireEje3';
 
-export const Eje3Questionnaire: React.FC = () => {
-  const [selectedCountry, setSelectedCountry] = useState<string>('Colombia');
+interface Eje3QuestionnaireProps {
+  userProfile?: {
+    uid: string;
+    name: string;
+    email: string;
+    role: string;
+    approved: boolean;
+    institution?: string;
+    position?: string;
+    country?: string;
+  } | null;
+}
+
+export const Eje3Questionnaire: React.FC<Eje3QuestionnaireProps> = ({ userProfile }) => {
+  const initialCountry = (userProfile?.country && RIPCEL_COUNTRIES.includes(userProfile.country))
+    ? userProfile.country 
+    : 'Colombia';
+
+  const [selectedCountry, setSelectedCountry] = useState<string>(initialCountry);
   const [data, setData] = useState<QuestionnaireData>(() => {
     // Try to load from localStorage or default to benchmark
-    const saved = localStorage.getItem(`ripcel_eje3_q_${selectedCountry}`);
+    const saved = localStorage.getItem(`ripcel_eje3_q_${initialCountry}`);
     if (saved) {
       try { return JSON.parse(saved); } catch (e) {}
     }
-    return BENCHMARK_QUESTIONNAIRES[selectedCountry] || createEmptyQuestionnaire(selectedCountry);
+    const initial = BENCHMARK_QUESTIONNAIRES[initialCountry] || createEmptyQuestionnaire(initialCountry);
+    if (userProfile && !initial.responsible) {
+      const pos = userProfile.position ? `${userProfile.position} - ` : '';
+      const inst = userProfile.institution ? `${userProfile.institution}` : 'RIPCEL';
+      initial.responsible = `${userProfile.name} (${pos}${inst})`;
+    }
+    return initial;
   });
   const [toastMessage, setToastMessage] = useState<string | null>(null);
 
@@ -118,6 +141,13 @@ export const Eje3Questionnaire: React.FC = () => {
         <p className="text-xs sm:text-sm text-stone-300 max-w-3xl leading-relaxed font-sans">
           Regulación, financiamiento y política pública para comunidades energéticas locales en los 16 países de la Red RIPCEL. Instrumento de primera ronda para alimentar la matriz de diagnóstico y los pilotos regionales.
         </p>
+
+        {userProfile && (
+          <div className="mt-4 inline-flex items-center gap-2 px-3 py-1.5 rounded-xl bg-teal-900/60 border border-teal-500/40 text-teal-200 text-xs font-mono">
+            <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+            <span>Investigador Acreditado: <strong>{userProfile.name}</strong> {userProfile.position ? `· ${userProfile.position}` : ''} ({userProfile.institution || 'Red RIPCEL'})</span>
+          </div>
+        )}
 
         {/* Scoring Scale Reference */}
         <div className="mt-6 pt-5 border-t border-white/10">

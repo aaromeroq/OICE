@@ -121,6 +121,7 @@ export const AdminDashboard: React.FC = () => {
                     <tr className="bg-stone-50 border-b hairline text-ink/50 uppercase font-mono tracking-wider">
                       <th className="py-3 px-4">Nombre</th>
                       <th className="py-3 px-4">Institución / Universidad</th>
+                      <th className="py-3 px-4">Cargo / Rol</th>
                       <th className="py-3 px-4">País</th>
                       <th className="py-3 px-4">Email</th>
                       <th className="py-3 px-4 text-right">Acción</th>
@@ -131,6 +132,7 @@ export const AdminDashboard: React.FC = () => {
                       <tr key={u.id} className="hover:bg-stone-50/50">
                         <td className="py-3.5 px-4 font-semibold">{u.name}</td>
                         <td className="py-3.5 px-4">{u.institution}</td>
+                        <td className="py-3.5 px-4 font-medium text-moss-800">{u.position || u.cargo || 'Investigador'}</td>
                         <td className="py-3.5 px-4">{u.country}</td>
                         <td className="py-3.5 px-4 font-mono">{u.email}</td>
                         <td className="py-3.5 px-4 text-right">

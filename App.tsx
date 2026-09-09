@@ -30,6 +30,9 @@ const App: React.FC = () => {
     email: string;
     role: string;
     approved: boolean;
+    institution?: string;
+    position?: string;
+    country?: string;
   } | null>(null);
   const [authLoading, setAuthLoading] = useState(true);
   const [communities, setCommunities] = useState<EnergyCommunity[]>(communitiesData);
@@ -44,7 +47,10 @@ const App: React.FC = () => {
           name: data.name || 'Investigador',
           email: email || '',
           role: data.role || 'member',
-          approved: data.approved || false
+          approved: data.approved || false,
+          institution: data.institution || '',
+          position: data.position || data.cargo || '',
+          country: data.country || ''
         });
       } else {
         setUserProfile({
@@ -52,7 +58,10 @@ const App: React.FC = () => {
           name: 'Investigador',
           email: email || '',
           role: 'member',
-          approved: false
+          approved: false,
+          institution: '',
+          position: '',
+          country: ''
         });
       }
     } catch (err) {
@@ -212,7 +221,7 @@ const App: React.FC = () => {
       case 'repository':
         return <AcademicRepository />;
       case 'legislation':
-        return <LegislativeMonitor />;
+        return <LegislativeMonitor userProfile={userProfile} onLoginSuccess={handleLoginSuccess} />;
       case 'catastro':
         return <RegistrationWizard userProfile={userProfile} onLoginSuccess={handleLoginSuccess} />;
       case 'ai':

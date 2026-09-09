@@ -2,8 +2,24 @@ import React, { useState, useMemo } from 'react';
 import { legislationData } from '../data/legislation';
 import { useLanguage } from '../i18n';
 import { Eje3Questionnaire } from './Eje3Questionnaire';
+import { AuthComponent } from './AuthComponent';
+import { UsersIcon, BriefcaseIcon } from './Icons';
 
-export const LegislativeMonitor: React.FC = () => {
+interface LegislativeMonitorProps {
+    userProfile?: {
+        uid: string;
+        name: string;
+        email: string;
+        role: string;
+        approved: boolean;
+        institution?: string;
+        position?: string;
+        country?: string;
+    } | null;
+    onLoginSuccess?: () => void;
+}
+
+export const LegislativeMonitor: React.FC<LegislativeMonitorProps> = ({ userProfile, onLoginSuccess }) => {
     const { t } = useLanguage();
     const [activeSubTab, setActiveSubTab] = useState<'laws' | 'questionnaire'>('laws');
     const [filterCountry, setFilterCountry] = useState('Todos');
@@ -69,10 +85,13 @@ export const LegislativeMonitor: React.FC = () => {
                     >
                         <span className="text-base">📋</span>
                         {t('legislation.tab.questionnaire')}
+                        {userProfile && (userProfile.approved || userProfile.role === 'admin') && (
+                            <span className="w-2 h-2 rounded-full bg-emerald-500"></span>
+                        )}
                     </button>
                 </div>
 
-                {/* Tab 1: Current Legislation */}
+                {/* Tab 1: Current Legislation (Open & Public) */}
                 {activeSubTab === 'laws' ? (
                     <div className="space-y-6 animate-fade-in">
                         {/* Filters */}
@@ -116,8 +135,74 @@ export const LegislativeMonitor: React.FC = () => {
                         )}
                     </div>
                 ) : (
-                    /* Tab 2: Eje 3 Questionnaire */
-                    <Eje3Questionnaire />
+                    /* Tab 2: Eje 3 Questionnaire — Access Controlled */
+                    <div className="animate-fade-in">
+                        {!userProfile ? (
+                            /* Case 1: Not logged in */
+                            <div className="bg-white rounded-2xl border border-stone-200 shadow-editorial p-8 max-w-xl mx-auto my-6 text-center animate-fade-in">
+                                <div className="inline-flex p-3.5 bg-teal-50 rounded-2xl border border-teal-100 text-teal-700 mb-4">
+                                    <UsersIcon className="h-8 w-8" />
+                                </div>
+                                <div className="mb-2">
+                                    <span className="inline-block text-[10px] font-black uppercase tracking-widest px-2.5 py-1 rounded bg-teal-50 text-teal-800 border border-teal-200 font-mono">
+                                        RIPCEL — Eje 3 · Acceso Restringido
+                                    </span>
+                                </div>
+                                <h2 className="text-2xl font-black text-stone-900 mb-2 font-display">
+                                    Cuestionario Nacional de Regulación y Políticas Públicas
+                                </h2>
+                                <p className="text-xs sm:text-sm text-stone-600 leading-relaxed max-w-md mx-auto mb-6">
+                                    Para responder y validar el diagnóstico regulatorio de tu país en la Red RIPCEL, debes iniciar sesión como investigador de la red o registrarte indicando tu <strong>institución</strong> y tu <strong>cargo</strong>.
+                                </p>
+                                <AuthComponent onAuthSuccess={onLoginSuccess} />
+                            </div>
+                        ) : (!userProfile.approved && userProfile.role !== 'admin') ? (
+                            /* Case 2: Logged in but pending admin approval */
+                            <div className="bg-white rounded-2xl border border-amber-200 shadow-editorial p-8 sm:p-10 max-w-2xl mx-auto my-8 text-center animate-fade-in">
+                                <div className="inline-flex p-4 bg-amber-50 rounded-2xl border border-amber-100 mb-5">
+                                    <BriefcaseIcon className="h-10 w-10 text-amber-600 animate-pulse" />
+                                </div>
+                                <div className="inline-block mb-3">
+                                    <span className="text-[10px] font-black uppercase tracking-widest px-3 py-1 rounded-full bg-amber-100 text-amber-800 border border-amber-200 font-mono">
+                                        Perfil en Revisión Científica
+                                    </span>
+                                </div>
+                                <h3 className="text-2xl font-bold text-stone-900 mb-3 font-display">
+                                    Autorización Pendiente por la Coordinación
+                                </h3>
+                                <p className="text-xs sm:text-sm text-stone-600 leading-relaxed mb-6 max-w-lg mx-auto">
+                                    Hola <strong>{userProfile.name}</strong>. Tu registro ha sido recibido exitosamente en la plataforma RIPCEL. 
+                                    Para responder y consignar el diagnóstico oficial del Eje 3 de tu país, tu perfil requiere la autorización previa de uno de los administradores de la red.
+                                </p>
+
+                                <div className="bg-stone-50 border border-stone-200 rounded-xl p-4 max-w-md mx-auto text-left text-xs space-y-2 mb-6 font-sans">
+                                    <div className="flex justify-between border-b border-stone-200/60 pb-1.5">
+                                        <span className="text-stone-500 font-mono">Investigador:</span>
+                                        <span className="font-semibold text-stone-850">{userProfile.name}</span>
+                                    </div>
+                                    <div className="flex justify-between border-b border-stone-200/60 pb-1.5">
+                                        <span className="text-stone-500 font-mono">Institución:</span>
+                                        <span className="font-semibold text-stone-850">{userProfile.institution || 'No especificada'}</span>
+                                    </div>
+                                    <div className="flex justify-between border-b border-stone-200/60 pb-1.5">
+                                        <span className="text-stone-500 font-mono">Cargo / Rol:</span>
+                                        <span className="font-semibold text-teal-800">{userProfile.position || 'No especificado'}</span>
+                                    </div>
+                                    <div className="flex justify-between">
+                                        <span className="text-stone-500 font-mono">Correo:</span>
+                                        <span className="font-mono text-stone-850">{userProfile.email}</span>
+                                    </div>
+                                </div>
+
+                                <div className="text-[11px] bg-amber-50 text-amber-900 p-3.5 rounded-xl border border-amber-200/80 font-sans max-w-md mx-auto">
+                                    Tan pronto un administrador verifique tu vinculación institucional, tendrás acceso inmediato para responder y guardar las respuestas de tu país.
+                                </div>
+                            </div>
+                        ) : (
+                            /* Case 3: Logged in and approved (or admin) */
+                            <Eje3Questionnaire userProfile={userProfile} />
+                        )}
+                    </div>
                 )}
             </div>
         </div>
