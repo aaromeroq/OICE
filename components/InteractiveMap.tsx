@@ -105,12 +105,30 @@ export const InteractiveMap: React.FC<InteractiveMapProps> = ({ communities, onS
 
         L.control.zoom({ position: 'topright' }).addTo(mapRef.current);
 
-        L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
-            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OSM</a> &copy; <a href="https://carto.com/">CARTO</a>',
-            subdomains: 'abcd',
-            maxZoom: 18,
-            crossOrigin: 'anonymous'
-        }).addTo(mapRef.current);
+        const osmLayer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            maxZoom: 19,
+            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+        });
+
+        const esriGray = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Base/MapServer/tile/{z}/{y}/{x}', {
+            maxZoom: 16,
+            attribution: 'Tiles &copy; Esri &mdash; Esri, DeLorme, NAVTEQ'
+        });
+
+        const esriSatellite = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+            maxZoom: 19,
+            attribution: 'Tiles &copy; Esri, Maxar, Earthstar Geographics'
+        });
+
+        // Add OpenStreetMap as default basemap
+        osmLayer.addTo(mapRef.current);
+
+        const baseMaps = {
+            'OpenStreetMap': osmLayer,
+            'Gris Claro (Esri)': esriGray,
+            'Satélite (Esri)': esriSatellite
+        };
+        L.control.layers(baseMaps, undefined, { position: 'topright' }).addTo(mapRef.current);
 
         borderLayerRef.current = L.featureGroup().addTo(mapRef.current);
         projectsLayerRef.current = L.featureGroup().addTo(mapRef.current);
