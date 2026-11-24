@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { db } from '../firebase';
-import { doc, getDoc, setDoc, serverTimestamp } from 'firebase/firestore';
+import { doc, getDoc, setDoc, collection, getDocs, serverTimestamp } from 'firebase/firestore';
 import {
   QuestionnaireData,
   ScaleRating,
@@ -27,6 +27,20 @@ interface Eje3QuestionnaireProps {
     position?: string;
     country?: string;
   } | null;
+}
+
+interface CloudResponseRecord {
+  docId: string;
+  country: string;
+  status: 'borrador' | 'enviado_a_revision' | 'validado_eje3';
+  updatedByUid: string;
+  updatedByName: string;
+  updatedByEmail: string;
+  institution: string;
+  position: string;
+  updateDate: string;
+  lastUpdatedClient: string;
+  payload: QuestionnaireData;
 }
 
 export const Eje3Questionnaire: React.FC<Eje3QuestionnaireProps> = ({ userProfile }) => {
@@ -60,6 +74,12 @@ export const Eje3Questionnaire: React.FC<Eje3QuestionnaireProps> = ({ userProfil
     date?: string;
   } | null>(null);
 
+  // Multi-response cloud state
+  const [allCloudResponses, setAllCloudResponses] = useState<CloudResponseRecord[]>([]);
+  const [showAllResponsesPanel, setShowAllResponsesPanel] = useState<boolean>(false);
+  const [filterResponsesCountry, setFilterResponsesCountry] = useState<string>('ALL');
+  const [viewingSubmission, setViewingSubmission] = useState<CloudResponseRecord | null>(null);
+
   const getCountryDocId = (countryName: string) => {
     return countryName
       .toLowerCase()
@@ -68,16 +88,64 @@ export const Eje3Questionnaire: React.FC<Eje3QuestionnaireProps> = ({ userProfil
       .replace(/\s+/g, "_");
   };
 
-  const showToast = (msg: string) => {
-    setToastMessage(msg);
-    setTimeout(() => setToastMessage(null), 3500);
+  // Unique document ID per (country + researcher UID) so multiple researchers from the same country never overwrite each other
+  const getUserCountryDocId = (countryName: string, uid?: string) => {
+    const slug = getCountryDocId(countryName);
+    return uid ? `${slug}__${uid}` : slug;
   };
 
-  // Load data for selected country (Firestore -> LocalStorage -> Benchmark)
+  const showToast = (msg: string) => {
+    setToastMessage(msg);
+    setTimeout(() => setToastMessage(null), 4000);
+  };
+
+  // Fetch all responses across all countries from Firestore for summary counts & export
+  const fetchAllCloudResponses = async () => {
+    try {
+      const snap = await getDocs(collection(db, 'eje3_questionnaires'));
+      const list: CloudResponseRecord[] = snap.docs.map(d => {
+        const raw = d.data();
+        return {
+          docId: d.id,
+          country: raw.country || d.id.split('__')[0],
+          status: raw.status || 'borrador',
+          updatedByUid: raw.updatedByUid || '',
+          updatedByName: raw.updatedByName || raw.responsible || 'Investigador',
+          updatedByEmail: raw.updatedByEmail || '',
+          institution: raw.institution || '',
+          position: raw.position || '',
+          updateDate: raw.updateDate || '',
+          lastUpdatedClient: raw.lastUpdatedClient || '',
+          payload: raw as unknown as QuestionnaireData
+        };
+      });
+      list.sort((a, b) => (b.lastUpdatedClient || b.updateDate).localeCompare(a.lastUpdatedClient || a.updateDate));
+      setAllCloudResponses(list);
+    } catch (err) {
+      console.warn('Could not list all cloud responses:', err);
+    }
+  };
+
+  const countsByCountry = useMemo(() => {
+    const counts: Record<string, number> = {};
+    allCloudResponses.forEach(r => {
+      counts[r.country] = (counts[r.country] || 0) + 1;
+    });
+    return counts;
+  }, [allCloudResponses]);
+
+  const filteredCloudResponses = useMemo(() => {
+    if (filterResponsesCountry === 'ALL') return allCloudResponses;
+    return allCloudResponses.filter(r => r.country === filterResponsesCountry);
+  }, [allCloudResponses, filterResponsesCountry]);
+
+  // Load THIS researcher's data for selected country (Firestore {country}__{uid} -> LocalStorage -> Benchmark -> Empty)
   const fetchCountryData = async (country: string) => {
     setCloudLoading(true);
+    setViewingSubmission(null);
     try {
-      const docRef = doc(db, 'eje3_questionnaires', getCountryDocId(country));
+      const targetDocId = getUserCountryDocId(country, userProfile?.uid);
+      const docRef = doc(db, 'eje3_questionnaires', targetDocId);
       const snapshot = await getDoc(docRef);
       if (snapshot.exists()) {
         const remoteData = snapshot.data();
@@ -100,7 +168,7 @@ export const Eje3Questionnaire: React.FC<Eje3QuestionnaireProps> = ({ userProfil
       setCloudLoading(false);
     }
 
-    // Fallback if not in Firestore
+    // Fallback if not yet in Firestore: check localStorage (preserves drafts saved offline before rules were deployed!)
     const saved = localStorage.getItem(`ripcel_eje3_q_${country}`);
     if (saved) {
       try {
@@ -112,7 +180,13 @@ export const Eje3Questionnaire: React.FC<Eje3QuestionnaireProps> = ({ userProfil
     }
 
     if (BENCHMARK_QUESTIONNAIRES[country]) {
-      setData(BENCHMARK_QUESTIONNAIRES[country]);
+      const benchCopy = JSON.parse(JSON.stringify(BENCHMARK_QUESTIONNAIRES[country])) as QuestionnaireData;
+      if (userProfile) {
+        const pos = userProfile.position ? `${userProfile.position} - ` : '';
+        const inst = userProfile.institution ? `${userProfile.institution}` : 'RIPCEL';
+        benchCopy.responsible = `${userProfile.name} (${pos}${inst})`;
+      }
+      setData(benchCopy);
     } else {
       const empty = createEmptyQuestionnaire(country);
       if (userProfile) {
@@ -127,8 +201,12 @@ export const Eje3Questionnaire: React.FC<Eje3QuestionnaireProps> = ({ userProfil
   };
 
   useEffect(() => {
+    fetchAllCloudResponses();
+  }, [userProfile?.uid]);
+
+  useEffect(() => {
     fetchCountryData(selectedCountry);
-  }, [selectedCountry]);
+  }, [selectedCountry, userProfile?.uid]);
 
   // When country selector changes
   const handleCountryChange = (country: string) => {
@@ -136,40 +214,122 @@ export const Eje3Questionnaire: React.FC<Eje3QuestionnaireProps> = ({ userProfil
   };
 
   const handleSaveToFirestore = async (status: 'borrador' | 'enviado_a_revision' = 'borrador') => {
+    if (viewingSubmission && viewingSubmission.updatedByUid !== userProfile?.uid && userProfile?.role !== 'admin') {
+      showToast('Estás en modo consulta de otro investigador. Vuelve a tu propio cuestionario para guardar.');
+      return;
+    }
     setCloudSaving(true);
     try {
+      const targetDocId = viewingSubmission
+        ? viewingSubmission.docId
+        : getUserCountryDocId(selectedCountry, userProfile?.uid);
       localStorage.setItem(`ripcel_eje3_q_${selectedCountry}`, JSON.stringify(data));
-      const docRef = doc(db, 'eje3_questionnaires', getCountryDocId(selectedCountry));
+      const docRef = doc(db, 'eje3_questionnaires', targetDocId);
       const payload = {
         ...data,
         country: selectedCountry,
         status: status,
-        updatedByUid: userProfile?.uid || null,
-        updatedByName: userProfile?.name || data.responsible || 'Investigador',
-        updatedByEmail: userProfile?.email || null,
-        institution: userProfile?.institution || null,
-        position: userProfile?.position || null,
+        updatedByUid: viewingSubmission ? viewingSubmission.updatedByUid : (userProfile?.uid || null),
+        updatedByName: viewingSubmission ? viewingSubmission.updatedByName : (userProfile?.name || data.responsible || 'Investigador'),
+        updatedByEmail: viewingSubmission ? viewingSubmission.updatedByEmail : (userProfile?.email || null),
+        institution: viewingSubmission ? viewingSubmission.institution : (userProfile?.institution || null),
+        position: viewingSubmission ? viewingSubmission.position : (userProfile?.position || null),
         lastUpdatedClient: new Date().toISOString(),
         serverUpdatedAt: serverTimestamp()
       };
       await setDoc(docRef, payload, { merge: true });
       setCloudStatus(status);
       setLastCloudSync({
-        name: userProfile?.name || 'Tú',
-        institution: userProfile?.institution || '',
-        position: userProfile?.position || '',
+        name: payload.updatedByName || 'Tú',
+        institution: payload.institution || '',
+        position: payload.position || '',
         date: data.updateDate
       });
+      await fetchAllCloudResponses();
       showToast(status === 'enviado_a_revision'
-        ? `¡Cuestionario de ${selectedCountry} guardado en Firestore y enviado a revisión del Eje 3!`
-        : `¡Cuestionario de ${selectedCountry} sincronizado exitosamente en Firestore!`
+        ? `¡Tu respuesta de ${selectedCountry} fue guardada en Firestore y enviada a revisión del Eje 3!`
+        : `¡Tu respuesta de ${selectedCountry} fue sincronizada exitosamente en Firestore!`
       );
     } catch (err: any) {
       console.error("Error saving to Firestore:", err);
-      showToast(`Error al guardar en Firestore: ${err.message || 'Error de conexión'}`);
+      showToast(`⚠️ Error al guardar en Firestore: ${err.message || 'Verifica permisos o conexión'}`);
     } finally {
       setCloudSaving(false);
     }
+  };
+
+  const handleInspectSubmission = (rec: CloudResponseRecord) => {
+    setViewingSubmission(rec);
+    setData(rec.payload);
+    setCloudStatus(rec.status);
+    setLastCloudSync({
+      name: rec.updatedByName,
+      institution: rec.institution,
+      position: rec.position,
+      date: rec.updateDate
+    });
+    setShowAllResponsesPanel(false);
+    showToast(`Visualizando respuesta de ${rec.updatedByName} (${rec.country})`);
+  };
+
+  const handleExportAllJSON = () => {
+    const exportList = filteredCloudResponses.map(r => ({
+      docId: r.docId,
+      country: r.country,
+      status: r.status,
+      researcher: r.updatedByName,
+      email: r.updatedByEmail,
+      institution: r.institution,
+      position: r.position,
+      updateDate: r.updateDate,
+      lastUpdatedClient: r.lastUpdatedClient,
+      responses: r.payload
+    }));
+    const jsonString = `data:text/json;charset=utf-8,${encodeURIComponent(JSON.stringify(exportList, null, 2))}`;
+    const downloadAnchor = document.createElement('a');
+    downloadAnchor.setAttribute('href', jsonString);
+    downloadAnchor.setAttribute('download', `RIPCEL_Eje3_Todas_Respuestas_${new Date().toISOString().split('T')[0]}.json`);
+    document.body.appendChild(downloadAnchor);
+    downloadAnchor.click();
+    downloadAnchor.remove();
+    showToast(`Exportadas ${exportList.length} respuestas en formato JSON`);
+  };
+
+  const handleExportAllCSV = () => {
+    const escapeCsv = (val: any) => {
+      const str = String(val ?? '').replace(/\r?\n/g, ' ').replace(/"/g, '""');
+      return `"${str}"`;
+    };
+    const headers = [
+      'Pais', 'Investigador', 'Email', 'Institucion', 'Cargo', 'Estado', 'Fecha',
+      'Q1_Calificacion', 'Q1_Norma', 'Q1_Estado', 'Q3_ResponsableConexion', 'Q3_Tiempo',
+      'Q4_MecanismoCompensacion', 'Q5_Incentivos', 'Q6_TarifasSociales', 'Q8_Multilaterales',
+      'Q10_ModeloNegocio', 'Sintesis_PuntajeGeneral', 'Sintesis_Fortaleza', 'Sintesis_Barrera',
+      'Sintesis_Financiamiento', 'Sintesis_Piloto', 'Sintesis_AccionPrioritaria'
+    ];
+    const rows = filteredCloudResponses.map(r => {
+      const p = r.payload;
+      return [
+        r.country, r.updatedByName, r.updatedByEmail, r.institution, r.position, r.status, r.updateDate,
+        p.q1_definition?.score, p.q1_definition?.law, p.q1_definition?.status,
+        p.q3_connection?.responsible, p.q3_connection?.estimatedTime,
+        p.q4_compensation?.mechanism, (p.q5_incentives || []).join(' | '),
+        p.q6_socialTariffs, p.q8_multilateral, p.q10_businessModel,
+        p.synthesis?.generalScore, p.synthesis?.strength, p.synthesis?.barrier,
+        p.synthesis?.fundingOpportunity, p.synthesis?.pilotTerritory, p.synthesis?.priorityAction
+      ].map(escapeCsv).join(',');
+    });
+    const csvContent = '\uFEFF' + [headers.join(','), ...rows].join('\n');
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `RIPCEL_Eje3_Matriz_Respuestas_${new Date().toISOString().split('T')[0]}.csv`;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(url);
+    showToast(`Exportadas ${filteredCloudResponses.length} respuestas en CSV (Excel)`);
   };
 
   const handleSaveLocalDraft = () => {
@@ -285,11 +445,14 @@ export const Eje3Questionnaire: React.FC<Eje3QuestionnaireProps> = ({ userProfil
                 value={selectedCountry}
                 onChange={(e) => handleCountryChange(e.target.value)}
               >
-                {RIPCEL_COUNTRIES.map(c => (
-                  <option key={c} value={c}>
-                    {c} {BENCHMARK_QUESTIONNAIRES[c] ? '★ (Datos Eje 3)' : ''}
-                  </option>
-                ))}
+                {RIPCEL_COUNTRIES.map(c => {
+                  const cloudCount = countsByCountry[c] || 0;
+                  return (
+                    <option key={c} value={c}>
+                      {c} {cloudCount > 0 ? `(${cloudCount} en nube)` : ''} {BENCHMARK_QUESTIONNAIRES[c] ? '★' : ''}
+                    </option>
+                  );
+                })}
               </select>
             </div>
 
@@ -321,6 +484,21 @@ export const Eje3Questionnaire: React.FC<Eje3QuestionnaireProps> = ({ userProfil
 
           {/* Action Buttons */}
           <div className="flex flex-wrap items-center gap-2 pt-2 lg:pt-0 border-t lg:border-t-0 border-stone-100">
+            <button
+              type="button"
+              onClick={() => {
+                fetchAllCloudResponses();
+                setShowAllResponsesPanel(!showAllResponsesPanel);
+              }}
+              className={`px-3 py-2 text-[11px] font-bold rounded-xl border transition-all flex items-center gap-1.5 ${
+                showAllResponsesPanel
+                  ? 'bg-indigo-700 text-white border-indigo-700'
+                  : 'bg-indigo-50 text-indigo-800 border-indigo-200 hover:bg-indigo-100'
+              }`}
+              title="Ver y exportar todas las respuestas enviadas por los investigadores en Firestore"
+            >
+              📊 Respuestas ({allCloudResponses.length})
+            </button>
             {BENCHMARK_QUESTIONNAIRES[selectedCountry] && (
               <button
                 type="button"
@@ -420,7 +598,158 @@ export const Eje3Questionnaire: React.FC<Eje3QuestionnaireProps> = ({ userProfil
             </div>
           )}
         </div>
+
+        {/* Multi-response notice */}
+        <div className="mt-2.5 text-[11px] text-stone-500 bg-stone-50 border border-stone-200/70 rounded-xl px-3.5 py-2 flex flex-wrap items-center justify-between gap-2">
+          <span>
+            ✅ <strong>Múltiples respuestas habilitadas:</strong> Tu diagnóstico se guarda de forma individual bajo tu usuario sin sobrescribir las respuestas de otros investigadores de <strong>{selectedCountry}</strong>.
+          </span>
+        </div>
       </div>
+
+      {/* Viewing Another Researcher's Submission Banner */}
+      {viewingSubmission && (
+        <div className="bg-amber-50 border border-amber-300 rounded-2xl p-4 flex flex-wrap items-center justify-between gap-3 shadow-sm">
+          <div className="text-xs text-amber-900">
+            <span className="font-bold uppercase tracking-wider text-[10px] bg-amber-200/80 px-2 py-0.5 rounded mr-2">
+              Modo Consulta
+            </span>
+            Estás visualizando la respuesta enviada por <strong>{viewingSubmission.updatedByName}</strong>
+            {viewingSubmission.institution ? ` (${viewingSubmission.institution})` : ''} para <strong>{viewingSubmission.country}</strong>.
+          </div>
+          <button
+            type="button"
+            onClick={() => fetchCountryData(selectedCountry)}
+            className="px-3 py-1.5 text-xs font-bold bg-amber-700 hover:bg-amber-800 text-white rounded-xl transition-colors"
+          >
+            ← Volver a mi cuestionario
+          </button>
+        </div>
+      )}
+
+      {/* Cloud Responses Explorer & Export Panel */}
+      {showAllResponsesPanel && (
+        <div className="bg-white border border-indigo-200 rounded-2xl p-5 sm:p-6 shadow-editorial space-y-4">
+          <div className="flex flex-wrap items-center justify-between gap-3 border-b border-stone-200 pb-4">
+            <div>
+              <span className="text-[10px] font-mono uppercase tracking-widest text-indigo-700 font-bold bg-indigo-50 px-2 py-0.5 rounded border border-indigo-200">
+                Base de Datos Firestore · Eje 3
+              </span>
+              <h3 className="text-base sm:text-lg font-bold text-stone-900 mt-1 font-display">
+                Respuestas Recibidas en la Nube ({filteredCloudResponses.length})
+              </h3>
+            </div>
+
+            <div className="flex flex-wrap items-center gap-2">
+              <select
+                value={filterResponsesCountry}
+                onChange={(e) => setFilterResponsesCountry(e.target.value)}
+                className="px-3 py-1.5 text-xs font-semibold border border-stone-300 rounded-xl bg-stone-50 text-stone-800"
+              >
+                <option value="ALL">Todos los países ({allCloudResponses.length})</option>
+                {RIPCEL_COUNTRIES.map(c => (
+                  <option key={c} value={c}>
+                    {c} ({countsByCountry[c] || 0})
+                  </option>
+                ))}
+              </select>
+
+              <button
+                type="button"
+                disabled={filteredCloudResponses.length === 0}
+                onClick={handleExportAllCSV}
+                className="px-3 py-1.5 text-xs font-bold bg-emerald-700 hover:bg-emerald-800 text-white rounded-xl disabled:opacity-40 transition-colors"
+              >
+                📊 Exportar CSV (Excel)
+              </button>
+              <button
+                type="button"
+                disabled={filteredCloudResponses.length === 0}
+                onClick={handleExportAllJSON}
+                className="px-3 py-1.5 text-xs font-bold bg-stone-800 hover:bg-stone-900 text-white rounded-xl disabled:opacity-40 transition-colors"
+              >
+                📥 Exportar JSON
+              </button>
+              <button
+                type="button"
+                onClick={() => setShowAllResponsesPanel(false)}
+                className="px-2.5 py-1.5 text-xs font-semibold text-stone-500 hover:text-stone-800"
+              >
+                ✕
+              </button>
+            </div>
+          </div>
+
+          {filteredCloudResponses.length === 0 ? (
+            <div className="text-center py-8 text-xs text-stone-500 bg-stone-50 rounded-xl border border-dashed border-stone-200">
+              Aún no hay respuestas sincronizadas en Firestore para el filtro seleccionado.
+            </div>
+          ) : (
+            <div className="overflow-x-auto">
+              <table className="min-w-full text-left text-xs border-collapse">
+                <thead>
+                  <tr className="border-b border-stone-200 text-[10px] uppercase tracking-wider text-stone-500 font-mono">
+                    <th className="py-2.5 px-3">País</th>
+                    <th className="py-2.5 px-3">Investigador</th>
+                    <th className="py-2.5 px-3">Institución / Cargo</th>
+                    <th className="py-2.5 px-3">Estado</th>
+                    <th className="py-2.5 px-3">Puntaje Q1 / Gral</th>
+                    <th className="py-2.5 px-3">Fecha</th>
+                    <th className="py-2.5 px-3 text-right">Acción</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-stone-100">
+                  {filteredCloudResponses.map(rec => (
+                    <tr key={rec.docId} className="hover:bg-stone-50 transition-colors">
+                      <td className="py-2.5 px-3 font-bold text-stone-900">{rec.country}</td>
+                      <td className="py-2.5 px-3">
+                        <div className="font-semibold text-stone-800">{rec.updatedByName}</div>
+                        {rec.updatedByEmail && (
+                          <div className="text-[10px] text-stone-400 font-mono">{rec.updatedByEmail}</div>
+                        )}
+                      </td>
+                      <td className="py-2.5 px-3 text-stone-600">
+                        <div>{rec.institution || '—'}</div>
+                        {rec.position && <div className="text-[10px] text-stone-400">{rec.position}</div>}
+                      </td>
+                      <td className="py-2.5 px-3">
+                        <span className={`inline-block px-2 py-0.5 rounded-full text-[10px] font-bold font-mono ${
+                          rec.status === 'validado_eje3'
+                            ? 'bg-emerald-100 text-emerald-800'
+                            : rec.status === 'enviado_a_revision'
+                            ? 'bg-blue-100 text-blue-800'
+                            : 'bg-teal-100 text-teal-800'
+                        }`}>
+                          {rec.status === 'validado_eje3'
+                            ? 'Validado'
+                            : rec.status === 'enviado_a_revision'
+                            ? 'Enviado'
+                            : 'Borrador'}
+                        </span>
+                      </td>
+                      <td className="py-2.5 px-3 font-mono text-stone-700">
+                        {rec.payload?.q1_definition?.score ?? '—'} / {rec.payload?.synthesis?.generalScore ?? '—'}
+                      </td>
+                      <td className="py-2.5 px-3 font-mono text-[11px] text-stone-500">
+                        {rec.updateDate || '—'}
+                      </td>
+                      <td className="py-2.5 px-3 text-right">
+                        <button
+                          type="button"
+                          onClick={() => handleInspectSubmission(rec)}
+                          className="px-2.5 py-1 text-[11px] font-bold bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border border-indigo-200 rounded-lg transition-colors"
+                        >
+                          👁️ Ver
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </div>
+      )}
 
       {/* SECTION 1: MARCO REGULATORIO */}
       <div className="bg-white border border-stone-200 rounded-2xl p-6 shadow-soft space-y-6">

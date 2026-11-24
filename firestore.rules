@@ -48,13 +48,16 @@ service cloud.firestore {
       allow delete: if isAdmin();
     }
 
-    // Reglas para el Cuestionario Nacional (Eje 3 RIPCEL)
-    match /eje3_questionnaires/{countryId} {
-      // Cualquier usuario autenticado puede leer los diagnósticos
+    // Reglas para el Cuestionario Nacional (Eje 3 RIPCEL - Múltiples respuestas por país: {countrySlug}__{uid})
+    match /eje3_questionnaires/{responseId} {
+      // Cualquier usuario autenticado puede leer los diagnósticos para consulta y análisis
       allow read: if isAuthenticated();
       
-      // Crear o actualizar: Miembros aprobados y administradores
-      allow create, update: if isApprovedMember() || isAdmin();
+      // Crear: Administradores o miembros aprobados creando su propio registro
+      allow create: if isAdmin() || (isApprovedMember() && request.resource.data.updatedByUid == request.auth.uid);
+      
+      // Actualizar: Administradores o el propio investigador dueño de esa respuesta
+      allow update: if isAdmin() || (isApprovedMember() && resource.data.updatedByUid == request.auth.uid && request.resource.data.updatedByUid == request.auth.uid);
       
       // Eliminar: Solo administradores
       allow delete: if isAdmin();
